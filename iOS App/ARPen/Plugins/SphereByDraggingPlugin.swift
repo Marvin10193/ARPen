@@ -81,6 +81,11 @@ class SphereByDraggingPlugin: Plugin {
                 self.finalPositionSphere = startingPoint
                 self.finalRadiusSphere = Double(sphereRadius)
                 
+                // Data for potential sharing
+                
+                let informationPackage: [String:Any] = ["nodeData": sphereNode]
+                NotificationCenter.default.post(name: .shareSCNNodeData, object: nil, userInfo: informationPackage)
+                
             }
             
             else
@@ -114,6 +119,11 @@ class SphereByDraggingPlugin: Plugin {
                         
                         sphere.localTranslate(by: self.finalPositionSphere!)
                         sphere.applyTransform()
+                        
+                        let arpNodeData = ARPNodeData(pluginName:"Sphere", radius: self.finalRadiusSphere!, positon: self.finalPositionSphere!)
+                        sphere.geometryColor.getHue(&arpNodeData.hue!, saturation: &arpNodeData.saturation, brightness: &arpNodeData.brightness, alpha: &arpNodeData.alpha)
+                        let informationPackage: [String:Any] = ["arpNodeData": arpNodeData]
+                        NotificationCenter.default.post(name: .shareARPNodeData, object: nil, userInfo: informationPackage)
                         
                         let buildingAction = PrimitiveBuildingAction(occtRef: sphere.occtReference!, scene: self.currentScene!, sphere: sphere)
                         self.undoRedoManager?.actionDone(buildingAction)

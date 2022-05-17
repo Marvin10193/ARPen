@@ -53,6 +53,8 @@ class PaintPlugin: Plugin {
             cylinderNode.buildLineInTwoPointsWithRotation(from: previousPoint, to: scene.pencilPoint.position, radius: 0.001, color: penColor)
             cylinderNode.name = "cylinderLine"
             scene.drawingNode.addChildNode(cylinderNode)
+            let informationPackage: [String: Any] = ["nodeData": cylinderNode]
+            NotificationCenter.default.post(name: .shareSCNNodeData, object: nil, userInfo: informationPackage)
             //add last drawn line element to currently drawn line collection
             currentLine?.append(cylinderNode)
         }

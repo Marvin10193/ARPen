@@ -9,7 +9,11 @@
 import UIKit
 import SceneKit
 import ARKit
-//import MultipeerConnectivity
+import MultipeerConnectivity
+import RealityKit
+import MetalKit
+
+
 
 /**
  The "Main" ViewController. This ViewController holds the instance of the PluginManager.
@@ -64,7 +68,12 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
     
     let userStudyRecordManager = UserStudyRecordManager() // Manager for storing data from user studies
     
-    //var multipeerSession: MultipeerSession!
+    //Everything used in the shared session and functionality handling
+    var multipeerSession: MultipeerSession?
+    var peerSesssionIDs = [MCPeerID: String]()
+    var sessionIDObservation: NSKeyValueObservation?
+    @IBOutlet weak var messageLabel: MessageLabel!
+    var joinedMessageDisplayed: Bool = false
     
     //A standard viewDidLoad
     override func viewDidLoad() {
@@ -142,6 +151,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         // Remove snapshot thumbnail when model has been loaded
         NotificationCenter.default.addObserver(self, selector: #selector(removeSnapshotThumbnail(_:)), name: Notification.Name.virtualObjectDidRenderAtAnchor, object: nil)
         
+        // Notifcations for shared AR functions
+        NotificationCenter.default.addObserver(self, selector: #selector(handleSharedStateChange(_:)), name: Notification.Name.shareSCNNodeData, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleSharedStateChange(_:)), name: Notification.Name.shareARPNodeData, object: nil)
+        
 //        // Enable host-guest sharing to share ARWorldMap
 //        multipeerSession = MultipeerSession(receivedDataHandler: receivedData)
         
@@ -169,6 +182,17 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
 
         // Run the view's session
         arSceneView.session.run(configuration)
+        
+        // Use key-value observation to monitor ARSession identifiers, might be useful to track anchors later on aswell as actions
+        sessionIDObservation = observe(\.arSceneView.session.identifier,options: [.new]) {object, change in print ("SessionID changed to: \(change.newValue!)")
+            guard let multipeerSession = self.multipeerSession else {
+                return
+            }
+            self.sendARSessionIDTo(peers: multipeerSession.connectedPeers)
+        }
+        
+        // Start looking for other devices
+        multipeerSession = MultipeerSession(receivedDataHandler: receivedData, peerJoinedHandler: peerJoined, peerLeftHandler: peerLeft, peerDiscoveredHandler: peerDiscovered)
         
         // Hide navigation bar
         self.navigationController?.setNavigationBarHidden(true, animated: true)
@@ -548,6 +572,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 default:
                     saveModelButton.isEnabled = false
             }
+            
+            let trackingState = userInfo["trackingState"] as! ARCamera.TrackingState
+            
+            if !joinedMessageDisplayed && !(multipeerSession?.connectedPeers.isEmpty)! && trackingState.description == "Normal"{
+                let peerName = multipeerSession!.connectedPeers.map({$0.displayName}).joined(separator:", ")
+                messageLabel.displayMessage("Connected with \(peerName).",duration: 6)
+                joinedMessageDisplayed = true
+            }
             break
         case .cameraDidChangeTrackingState:
             updateStatusLabel(for: userInfo["currentFrame"] as! ARFrame, trackingState: userInfo["trackingState"] as! ARCamera.TrackingState)
@@ -769,6 +801,188 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
     @objc func removeSnapshotThumbnail(_ notification: Notification) {
         self.snapshotThumbnail.isHidden = true
     }
+    
+    
+    
+    
+    // MARK: - Delegate and functions for Shared Session
+    
+    func sendARSessionIDTo(peers: [MCPeerID]){
+        guard let multipeerSession = multipeerSession else {
+            return
+        }
+        let idString = arSceneView.session.identifier.uuidString
+        let command = "SessionID:" + idString
+        if let commandData = command.data(using: .utf8){
+            multipeerSession.sendToPeers(commandData, reliably: true, peers: peers)}
+    }
+    
+    func receivedData(_ data: Data, from peer: MCPeerID){
+        if let receivedNode = try? NSKeyedUnarchiver.unarchivedObject(ofClass: SCNNode.self, from: data){
+            switch receivedNode.name {
+            case "cylinderLine":
+                (arSceneView.scene as! PenScene).drawingNode.addChildNode(receivedNode)
+                break
+            case "currentDragSphereNode":
+                if ((arSceneView.scene as! PenScene).drawingNode.childNodes.contains(where: {$0.name == "currentDragSphereNode"})){
+                    (arSceneView.scene as! PenScene).drawingNode.childNodes.first(where: {$0.name == "currentDragSphereNode"})?.geometry = receivedNode.geometry
+                    break
+                }
+                else {
+                    (arSceneView.scene as! PenScene).drawingNode.addChildNode(receivedNode)
+                    break
+                }
+            case "currentDragBoxNode":
+                if ((arSceneView.scene as! PenScene).drawingNode.childNodes.contains(where: {$0.name == "currentDragBoxNode"})){
+                    (arSceneView.scene as! PenScene).drawingNode.childNodes.first(where: {$0.name == "currentDragBoxNode"})?.geometry = receivedNode.geometry
+                    break
+                }
+                else{
+                    (arSceneView.scene as! PenScene).drawingNode.addChildNode(receivedNode)
+                    break
+                }
+            case "currentExtractionBoxNode:":
+                if ((arSceneView.scene as! PenScene).drawingNode.childNodes.contains(where: {$0.name == "currentExtractionBoxNode"})){
+                    (arSceneView.scene as! PenScene).drawingNode.childNodes.first(where: {$0.name == "currentExtractionBoxNode"})?.geometry = receivedNode.geometry
+                    break
+                }
+                else{
+                    (arSceneView.scene as! PenScene).drawingNode.addChildNode(receivedNode)
+                    break
+                }
+            case "currentDragCylinderNode":
+                if ((arSceneView.scene as! PenScene).drawingNode.childNodes.contains(where: {$0.name == "currentDragCylinderNode"})){
+                    (arSceneView.scene as! PenScene).drawingNode.childNodes.first(where: {$0.name == "currentDragCylinderNode"})?.geometry = receivedNode.geometry
+                    break
+                }
+                else{
+                    (arSceneView.scene as! PenScene).drawingNode.addChildNode(receivedNode)
+                    break
+                }
+            case "currentDragPyramidNode:":
+                if ((arSceneView.scene as! PenScene).drawingNode.childNodes.contains(where: {$0.name == "currentDragPyramidNode"})){
+                    (arSceneView.scene as! PenScene).drawingNode.childNodes.first(where: {$0.name == "currentDragPyramidNode"})?.geometry = receivedNode.geometry
+                    break
+                }
+                else{
+                    (arSceneView.scene as! PenScene).drawingNode.addChildNode(receivedNode)
+                    break
+                }
+            default:
+                messageLabel.displayMessage("Unknown Node-Type received!")
+            }
+        }
+        else if let receivedARPNodeData = try? JSONDecoder().decode(ARPNodeData.self, from: data){
+            switch receivedARPNodeData.pluginName {
+            case "Sphere":
+                (arSceneView.scene as! PenScene).drawingNode.childNodes.filter({$0.name == "currentDragSphereNode"}).forEach({$0.removeFromParentNode()})
+                let sphere = ARPSphere(radius: receivedARPNodeData.radius!)
+                sphere.localTranslate(by: receivedARPNodeData.positon!)
+                sphere.applyTransform()
+                sphere.geometryColor = UIColor.init(hue: receivedARPNodeData.hue!, saturation: receivedARPNodeData.saturation, brightness: receivedARPNodeData.brightness, alpha: receivedARPNodeData.alpha)
+                DispatchQueue.main.async {
+                    (self.arSceneView.scene as! PenScene).drawingNode.addChildNode(sphere)
+                }
+            case "Cube":
+                (arSceneView.scene as! PenScene).drawingNode.childNodes.filter({$0.name == "currentDragBoxNode"}).forEach({$0.removeFromParentNode()})
+                let cube = ARPBox(width: receivedARPNodeData.width!, height: receivedARPNodeData.height!, length: receivedARPNodeData.length!)
+                cube.localTranslate(by: receivedARPNodeData.positon!)
+                cube.applyTransform()
+                cube.geometryColor = UIColor.init(hue: receivedARPNodeData.hue!, saturation: receivedARPNodeData.saturation, brightness: receivedARPNodeData.brightness, alpha: receivedARPNodeData.alpha)
+                DispatchQueue.main.async {
+                    (self.arSceneView.scene as! PenScene).drawingNode.addChildNode(cube)
+                }
+            case "CubeExtraction":
+                (arSceneView.scene as! PenScene).drawingNode.childNodes.filter({$0.name == "currentExtractionBoxNode"}).forEach({$0.removeFromParentNode()})
+                let cube = ARPBox(width: receivedARPNodeData.width!, height: receivedARPNodeData.height!, length: receivedARPNodeData.length!)
+                cube.localTranslate(by: receivedARPNodeData.positon!)
+                cube.applyTransform()
+                cube.geometryColor = UIColor.init(hue: receivedARPNodeData.hue!, saturation: receivedARPNodeData.saturation, brightness: receivedARPNodeData.brightness, alpha: receivedARPNodeData.alpha)
+                DispatchQueue.main.async {
+                    (self.arSceneView.scene as! PenScene).drawingNode.addChildNode(cube)
+                }
+            case "Cylinder":
+                (arSceneView.scene as! PenScene).drawingNode.childNodes.filter({$0.name == "currentDragCylinderNode"}).forEach({$0.removeFromParentNode()})
+                let cylinder = ARPCylinder(radius: receivedARPNodeData.radius!, height: receivedARPNodeData.height!)
+                cylinder.localTranslate(by: receivedARPNodeData.positon!)
+                cylinder.applyTransform()
+                cylinder.geometryColor = UIColor.init(hue: receivedARPNodeData.hue!, saturation: receivedARPNodeData.saturation, brightness: receivedARPNodeData.brightness, alpha: receivedARPNodeData.alpha)
+                DispatchQueue.main.async {
+                    (self.arSceneView.scene as! PenScene).drawingNode.addChildNode(cylinder)
+                }
+            case "Pyramid":
+                (arSceneView.scene as! PenScene).drawingNode.childNodes.filter({$0.name == "currentDragPyramidNode"}).forEach({$0.removeFromParentNode()})
+                let pyramid = ARPPyramid(width: receivedARPNodeData.width!, height: receivedARPNodeData.height!, length: receivedARPNodeData.length!)
+                pyramid.localTranslate(by: receivedARPNodeData.positon!)
+                pyramid.applyTransform()
+                pyramid.geometryColor = UIColor.init(hue: receivedARPNodeData.hue!, saturation: receivedARPNodeData.saturation, brightness: receivedARPNodeData.brightness, alpha: receivedARPNodeData.alpha)
+                DispatchQueue.main.async {
+                    (self.arSceneView.scene as! PenScene).drawingNode.addChildNode(pyramid)
+                }
+            default:
+                messageLabel.displayMessage("Received ARPNodeData of an unknown Plugin!")
+                fatalError("Received ARPNodeData of an unknown Plugin!")
+            }
+        }
+    }
+    
+    func peerDiscovered(_peer: MCPeerID) -> Bool{
+        guard let multipeerSession = multipeerSession else {
+            return false
+        }
+        if multipeerSession.connectedPeers.count > 1 {
+            // Do not allow more than two devices in the session (one person drawing and one person spectating)
+            messageLabel.displayMessage("A third peer wants to join the experience.\n This app is limited to two users.",duration: 6)
+            return false
+        }
+        else{
+            return true
+        }
+    }
+    
+    func peerJoined(_ peer: MCPeerID){
+        //messageLabel.displayMessage("A peer wants to join the experience. Hold the phones next to each other", duration: 6)
+        sendARSessionIDTo(peers: [peer])
+        
+    }
+    
+    func peerLeft(_ peer: MCPeerID){
+        messageLabel.displayMessage("A peer has left the shared session.", duration: 6)
+        // could be used later on to save and restore if connection is lost during study!!!
+        peerSesssionIDs.removeValue(forKey: peer)
+    }
+    
+    @objc func handleSharedStateChange(_ notification: Notification){
+        guard let userInfo = notification.userInfo else{
+            print("notification.userINfo is empty")
+            return
+        }
+        switch notification.name{
+        case .shareSCNNodeData:
+            let receivedNode = userInfo["nodeData"] as! SCNNode
+            if !(multipeerSession?.connectedPeers.isEmpty)!{
+                guard let encodedSCNNodeData = try? NSKeyedArchiver.archivedData(withRootObject: receivedNode , requiringSecureCoding: true) else {
+                    messageLabel.displayMessage("Could not encode SCNNode!")
+                    fatalError("Could not encode SCNNode!")
+                }
+                multipeerSession?.sendToAllPeers(encodedSCNNodeData, reliably: true)
+            }
+        case .shareARPNodeData:
+            let arpNodeData = userInfo["arpNodeData"] as! ARPNodeData
+            if !(multipeerSession?.connectedPeers.isEmpty)!{
+                guard let encodedARPNodeData = try? JSONEncoder().encode(arpNodeData) else{
+                    messageLabel.displayMessage("Failed to encode ARPNodeData!")
+                    fatalError("Failed to encode ARNodeData!")
+                }
+                multipeerSession?.sendToAllPeers(encodedARPNodeData, reliably: true)
+            }
+        default:
+            break
+        }
+    }
+    
+    
+    
     
     
     // MARK: - Share ARWorldMap with other users

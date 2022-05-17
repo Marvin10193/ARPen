@@ -95,6 +95,8 @@
 		4AFE55B525EE8D5D00333026 /* PointScalingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFE55AF25EE8D5D00333026 /* PointScalingPlugin.swift */; };
 		4AFE55B625EE8D5D00333026 /* PinchScalingTechniquePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFE55B025EE8D5D00333026 /* PinchScalingTechniquePlugin.swift */; };
 		4AFE55B725EE8D5D00333026 /* ScrollScalingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFE55B125EE8D5D00333026 /* ScrollScalingPlugin.swift */; };
+		58562849282E579800806E68 /* MessageLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58562848282E579800806E68 /* MessageLabel.swift */; };
+		5856284B282E765F00806E68 /* ARPNodeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5856284A282E765F00806E68 /* ARPNodeData.swift */; };
 		750292912559C87A00963547 /* ARPPyramid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750292902559C87A00963547 /* ARPPyramid.swift */; };
 		75152A912573B8750051E15D /* PenRayScalingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75152A902573B8750051E15D /* PenRayScalingPlugin.swift */; };
 		75152A932573BAB30051E15D /* PenRayScaler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75152A922573BAB30051E15D /* PenRayScaler.swift */; };
@@ -266,6 +268,8 @@
 		4AFE55AF25EE8D5D00333026 /* PointScalingPlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PointScalingPlugin.swift; sourceTree = "<group>"; };
 		4AFE55B025EE8D5D00333026 /* PinchScalingTechniquePlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinchScalingTechniquePlugin.swift; sourceTree = "<group>"; };
 		4AFE55B125EE8D5D00333026 /* ScrollScalingPlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScrollScalingPlugin.swift; sourceTree = "<group>"; };
+		58562848282E579800806E68 /* MessageLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageLabel.swift; sourceTree = "<group>"; };
+		5856284A282E765F00806E68 /* ARPNodeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARPNodeData.swift; sourceTree = "<group>"; };
 		750292902559C87A00963547 /* ARPPyramid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARPPyramid.swift; sourceTree = "<group>"; };
 		75152A902573B8750051E15D /* PenRayScalingPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PenRayScalingPlugin.swift; sourceTree = "<group>"; };
 		75152A922573BAB30051E15D /* PenRayScaler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PenRayScaler.swift; sourceTree = "<group>"; };
@@ -738,6 +742,8 @@
 				4ACE473224659B450037F9EE /* PositionFilter.swift */,
 				4A10BFBC251E2C8600950CBE /* ARPenPluginTableViewCell.swift */,
 				4A10BFBD251E2C8600950CBE /* ARPenPluginTableViewCell.xib */,
+				58562848282E579800806E68 /* MessageLabel.swift */,
+				5856284A282E765F00806E68 /* ARPNodeData.swift */,
 			);
 			path = "Extensions And Helpers";
 			sourceTree = "<group>";
@@ -882,6 +888,7 @@
 				4AAC4AE823A24A20003B6E83 /* Util.swift in Sources */,
 				75EBB71C25825EE2001ADB8F /* DirectDeviceRotator.swift in Sources */,
 				4A56953920581B6700C8065E /* UserStudyRecordManager.swift in Sources */,
+				58562849282E579800806E68 /* MessageLabel.swift in Sources */,
 				4AC1F5BE2524D1BD002B0A7F /* MidairPlugin.swift in Sources */,
 				753150CA259B6E7700201595 /* TranslationAction.swift in Sources */,
 				4AFE55B325EE8D5D00333026 /* PenRayScalingTechniquePlugin.swift in Sources */,
@@ -943,6 +950,7 @@
 				4AAC4B2123A2949E003B6E83 /* CombinePluginTutorial.swift in Sources */,
 				4AC1F5A02524C0AD002B0A7F /* ARMenu.swift in Sources */,
 				4AC1F5BD2524D1BD002B0A7F /* TwoHandedTouch.swift in Sources */,
+				5856284B282E765F00806E68 /* ARPNodeData.swift in Sources */,
 				4AAC4AEB23A24A20003B6E83 /* ARPRevolution.swift in Sources */,
 				75EFDC5725ABB9BB00867275 /* CenterScalingAction.swift in Sources */,
 				4A27E27D239FCEA800C4BF75 /* NotificationName.swift in Sources */,
@@ -1141,7 +1149,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 44GTV4NJA9;
+				DEVELOPMENT_TEAM = 578WZS6QWY;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1152,7 +1160,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 14.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 2.1;
-				PRODUCT_BUNDLE_IDENTIFIER = "de.rwth-aachen.hci.ARPenApp";
+				PRODUCT_BUNDLE_IDENTIFIER = "ARPen-Master-Marvin";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "ARPen/ARPen-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -1167,7 +1175,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 44GTV4NJA9;
+				DEVELOPMENT_TEAM = 578WZS6QWY;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1178,7 +1186,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 14.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 2.1;
-				PRODUCT_BUNDLE_IDENTIFIER = "de.rwth-aachen.hci.ARPenApp";
+				PRODUCT_BUNDLE_IDENTIFIER = "ARPen-Master-Marvin";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "ARPen/ARPen-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;

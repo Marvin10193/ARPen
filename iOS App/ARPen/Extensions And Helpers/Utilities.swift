@@ -63,6 +63,8 @@ extension Notification.Name {
     static let cameraDidChangeTrackingState = Notification.Name("cameraDidChangeTrackingState")
     static let sessionDidUpdate = Notification.Name("sessionDidUpdate")
     static let virtualObjectDidRenderAtAnchor = Notification.Name("virtualObjectDidRenderAtAnchor")
+    static let shareSCNNodeData = Notification.Name("shareSCNNodeData")
+    static let shareARPNodeData = Notification.Name("shareARPNodeData")
 }
 
 @available(iOS 12.0, *)
@@ -122,5 +124,68 @@ extension ARCamera.TrackingState {
         case .limited(.initializing):
             return "Initializing AR session."
         }
+    }
+}
+
+// MARK: - Utilities used in SharedAR
+
+extension SCNGeometry{
+    
+    static func generateCoordinateSystemAxes(length: Float = 0.1, thickness: Float = 2.0, color: Int) -> SCNNode {
+        let thicknessInM = (length/100) * thickness
+        let cornerRadius = thickness / 2.0
+        let offset = length / 2.0
+        let xAxisBox = SCNBox.init(width: CGFloat(length), height: CGFloat(thicknessInM), length: CGFloat(thicknessInM), chamferRadius: CGFloat(cornerRadius))
+        let yAxisBox = SCNBox.init(width: CGFloat(thicknessInM), height: CGFloat(length), length: CGFloat(thicknessInM), chamferRadius: CGFloat(cornerRadius))
+        let zAxisBox = SCNBox.init(width: CGFloat(thicknessInM), height: CGFloat(thicknessInM), length: CGFloat(length), chamferRadius: CGFloat(cornerRadius))
+        
+        if color == 1{
+            xAxisBox.firstMaterial?.diffuse.contents = UIColor.red
+            yAxisBox.firstMaterial?.diffuse.contents = UIColor.green
+            zAxisBox.firstMaterial?.diffuse.contents = UIColor.blue
+        }
+        else if color != 1{
+            xAxisBox.firstMaterial?.diffuse.contents = UIColor.yellow
+            yAxisBox.firstMaterial?.diffuse.contents = UIColor.orange
+            zAxisBox.firstMaterial?.diffuse.contents = UIColor.brown
+        }
+        
+        let xAxis = SCNNode(geometry: xAxisBox)
+        let yAxis = SCNNode(geometry: yAxisBox)
+        let zAxis = SCNNode(geometry: zAxisBox)
+        
+        xAxis.position = SCNVector3Make(offset, 0, 0)
+        yAxis.position = SCNVector3Make(0,offset,0)
+        zAxis.position = SCNVector3Make(0, 0, offset)
+        
+        let axes = SCNNode()
+        
+        axes.addChildNode(xAxis)
+        axes.addChildNode(yAxis)
+        axes.addChildNode(zAxis)
+        
+        return axes
+    }
+}
+
+
+extension SCNVector3: Codable {
+    private enum CodingKeys: String, CodingKey{
+        case x,y,z
+    }
+    
+    public init(from decoder: Decoder) throws{
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        let x = try values.decode(Float.self, forKey: .x)
+        let y = try values.decode(Float.self, forKey: .y)
+        let z = try values.decode(Float.self, forKey: .z)
+        self.init(x,y,z)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(x, forKey: .x)
+        try container.encode(y, forKey: .y)
+        try container.encode(z, forKey: .z)
     }
 }

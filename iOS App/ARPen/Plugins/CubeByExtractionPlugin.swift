@@ -87,6 +87,10 @@ class CubeByExtractionPlugin: Plugin,UserStudyRecordPluginProtocol {
                 self.finalCenterX = boxCenterXPosition
                 self.finalCenterZ = boxCenterZPosition
                 
+                // Data for the NotificationCenter that shares data if possible
+                let informationPackage: [String: Any] = ["nodeData": boxNode]
+                NotificationCenter.default.post(name: .shareSCNNodeData, object: nil, userInfo: informationPackage)
+                
                 
             } else {
                 //if the button is pressed but no startingPoint exists -> first frame with the button pressed. Set current pencil position as the start point
@@ -129,6 +133,10 @@ class CubeByExtractionPlugin: Plugin,UserStudyRecordPluginProtocol {
             self.finalCenterY = boxCenterYPosition
             
             self.boxNode = boxNode
+            
+            // Again NodeData for sharing
+            let informationPackage: [String: Any] = ["nodeData": boxNode]
+            NotificationCenter.default.post(name: .shareSCNNodeData, object: nil, userInfo: informationPackage)
         }
         
     }
@@ -155,6 +163,13 @@ class CubeByExtractionPlugin: Plugin,UserStudyRecordPluginProtocol {
         
         box.localTranslate(by: SCNVector3(self.finalCenterX!, self.finalCenterY!, self.finalCenterZ!))
         box.applyTransform()
+        
+        // ARPNodeData for potential sharing
+        let arpNodeData = ARPNodeData(pluginName: "CubeExtraction", positon: SCNVector3(self.finalCenterX!,self.finalCenterY!,self.finalCenterZ!), width: self.finalBoxWidth!, height: self.finalBoxHeight!, length: self.finalBoxLength!)
+        box.geometryColor.getHue(&arpNodeData.hue!, saturation: &arpNodeData.saturation, brightness: &arpNodeData.brightness, alpha: &arpNodeData.alpha)
+        let informationPackage: [String:Any] = ["arpNodeData": arpNodeData]
+        NotificationCenter.default.post(name: .shareARPNodeData, object: nil, userInfo: informationPackage)
+        
         
         let buildingAction = PrimitiveBuildingAction(occtRef: box.occtReference!, scene: self.currentScene!, box: box)
         self.undoRedoManager?.actionDone(buildingAction)
