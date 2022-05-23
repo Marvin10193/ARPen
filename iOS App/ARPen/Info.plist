@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This App uses the Photo Library to save the screen recording from the live video feed.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>This App uses Bonjour services to detect nearby devices that want to join a shared ARSession.</string>
 	<key>NSBonjourServices</key>

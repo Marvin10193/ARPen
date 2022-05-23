@@ -95,6 +95,17 @@
 		4AFE55B525EE8D5D00333026 /* PointScalingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFE55AF25EE8D5D00333026 /* PointScalingPlugin.swift */; };
 		4AFE55B625EE8D5D00333026 /* PinchScalingTechniquePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFE55B025EE8D5D00333026 /* PinchScalingTechniquePlugin.swift */; };
 		4AFE55B725EE8D5D00333026 /* ScrollScalingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFE55B125EE8D5D00333026 /* ScrollScalingPlugin.swift */; };
+		584EFF402833B4CD00FE645F /* VideoProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF3F2833B4CD00FE645F /* VideoProcessor.swift */; };
+		584EFF422833B4F100FE645F /* VideoFrameData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF412833B4F100FE645F /* VideoFrameData.swift */; };
+		584EFF442833B50E00FE645F /* BufferView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF432833B50E00FE645F /* BufferView.swift */; };
+		584EFF462833B52F00FE645F /* RenderDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF452833B52F00FE645F /* RenderDestination.swift */; };
+		584EFF482833B57E00FE645F /* MetalUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF472833B57E00FE645F /* MetalUtils.swift */; };
+		584EFF4A2833B5AB00FE645F /* Matrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF492833B5AB00FE645F /* Matrix.swift */; };
+		584EFF4C2833B68700FE645F /* Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF4B2833B68700FE645F /* Renderer.swift */; };
+		584EFF4E2833B6A000FE645F /* PipelineStates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF4D2833B6A000FE645F /* PipelineStates.swift */; };
+		584EFF502833B6BB00FE645F /* DepthPencilStates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF4F2833B6BB00FE645F /* DepthPencilStates.swift */; };
+		584EFF522833B6CF00FE645F /* VertexDescriptors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF512833B6CF00FE645F /* VertexDescriptors.swift */; };
+		584EFF542833B6F100FE645F /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF532833B6F100FE645F /* Shaders.metal */; };
 		58562849282E579800806E68 /* MessageLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58562848282E579800806E68 /* MessageLabel.swift */; };
 		5856284B282E765F00806E68 /* ARPNodeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5856284A282E765F00806E68 /* ARPNodeData.swift */; };
 		750292912559C87A00963547 /* ARPPyramid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750292902559C87A00963547 /* ARPPyramid.swift */; };
@@ -268,6 +279,18 @@
 		4AFE55AF25EE8D5D00333026 /* PointScalingPlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PointScalingPlugin.swift; sourceTree = "<group>"; };
 		4AFE55B025EE8D5D00333026 /* PinchScalingTechniquePlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinchScalingTechniquePlugin.swift; sourceTree = "<group>"; };
 		4AFE55B125EE8D5D00333026 /* ScrollScalingPlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScrollScalingPlugin.swift; sourceTree = "<group>"; };
+		584EFF3F2833B4CD00FE645F /* VideoProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoProcessor.swift; sourceTree = "<group>"; };
+		584EFF412833B4F100FE645F /* VideoFrameData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoFrameData.swift; sourceTree = "<group>"; };
+		584EFF432833B50E00FE645F /* BufferView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BufferView.swift; sourceTree = "<group>"; };
+		584EFF452833B52F00FE645F /* RenderDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderDestination.swift; sourceTree = "<group>"; };
+		584EFF472833B57E00FE645F /* MetalUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalUtils.swift; sourceTree = "<group>"; };
+		584EFF492833B5AB00FE645F /* Matrix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Matrix.swift; sourceTree = "<group>"; };
+		584EFF4B2833B68700FE645F /* Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
+		584EFF4D2833B6A000FE645F /* PipelineStates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PipelineStates.swift; sourceTree = "<group>"; };
+		584EFF4F2833B6BB00FE645F /* DepthPencilStates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthPencilStates.swift; sourceTree = "<group>"; };
+		584EFF512833B6CF00FE645F /* VertexDescriptors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VertexDescriptors.swift; sourceTree = "<group>"; };
+		584EFF532833B6F100FE645F /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
+		584EFF552833B71000FE645F /* ShaderTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderTypes.h; sourceTree = "<group>"; };
 		58562848282E579800806E68 /* MessageLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageLabel.swift; sourceTree = "<group>"; };
 		5856284A282E765F00806E68 /* ARPNodeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARPNodeData.swift; sourceTree = "<group>"; };
 		750292902559C87A00963547 /* ARPPyramid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARPPyramid.swift; sourceTree = "<group>"; };
@@ -559,6 +582,40 @@
 			path = ARPen/Plugins/ScalingTechniques;
 			sourceTree = SOURCE_ROOT;
 		};
+		584EFF3C2833B47A00FE645F /* ARStreaming */ = {
+			isa = PBXGroup;
+			children = (
+				584EFF3F2833B4CD00FE645F /* VideoProcessor.swift */,
+				584EFF412833B4F100FE645F /* VideoFrameData.swift */,
+				584EFF3E2833B49500FE645F /* Renderer */,
+				584EFF3D2833B48800FE645F /* Utilities */,
+			);
+			path = ARStreaming;
+			sourceTree = "<group>";
+		};
+		584EFF3D2833B48800FE645F /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				584EFF432833B50E00FE645F /* BufferView.swift */,
+				584EFF452833B52F00FE645F /* RenderDestination.swift */,
+				584EFF472833B57E00FE645F /* MetalUtils.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		584EFF3E2833B49500FE645F /* Renderer */ = {
+			isa = PBXGroup;
+			children = (
+				584EFF4B2833B68700FE645F /* Renderer.swift */,
+				584EFF4D2833B6A000FE645F /* PipelineStates.swift */,
+				584EFF4F2833B6BB00FE645F /* DepthPencilStates.swift */,
+				584EFF512833B6CF00FE645F /* VertexDescriptors.swift */,
+				584EFF532833B6F100FE645F /* Shaders.metal */,
+				584EFF552833B71000FE645F /* ShaderTypes.h */,
+			);
+			path = Renderer;
+			sourceTree = "<group>";
+		};
 		75152A8F2573B84E0051E15D /* ScalingPlugins */ = {
 			isa = PBXGroup;
 			children = (
@@ -661,6 +718,7 @@
 		DC28B43E200E4353008B77AB /* ARPen */ = {
 			isa = PBXGroup;
 			children = (
+				584EFF3C2833B47A00FE645F /* ARStreaming */,
 				4AC0B97D226F2B3F001B591D /* ARPen.entitlements */,
 				DC28B43F200E4353008B77AB /* AppDelegate.swift */,
 				DC28B443200E4353008B77AB /* ViewController.swift */,
@@ -744,6 +802,7 @@
 				4A10BFBD251E2C8600950CBE /* ARPenPluginTableViewCell.xib */,
 				58562848282E579800806E68 /* MessageLabel.swift */,
 				5856284A282E765F00806E68 /* ARPNodeData.swift */,
+				584EFF492833B5AB00FE645F /* Matrix.swift */,
 			);
 			path = "Extensions And Helpers";
 			sourceTree = "<group>";
@@ -866,6 +925,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				584EFF542833B6F100FE645F /* Shaders.metal in Sources */,
 				4AAC4B0C23A24A6E003B6E83 /* OCCT.mm in Sources */,
 				DC28B461200E46DC008B77AB /* Plugin.swift in Sources */,
 				4ACE473324659B450037F9EE /* PositionFilter.swift in Sources */,
@@ -884,7 +944,9 @@
 				4AC1F5AA2524C1D8002B0A7F /* ARPenPlaneNode.swift in Sources */,
 				DC28B45F200E4561008B77AB /* PenManager.swift in Sources */,
 				EA0C796222F078EE00E820E8 /* ARPenWireBoxNode.swift in Sources */,
+				584EFF402833B4CD00FE645F /* VideoProcessor.swift in Sources */,
 				4A10BFBE251E2C8600950CBE /* ARPenPluginTableViewCell.swift in Sources */,
+				584EFF422833B4F100FE645F /* VideoFrameData.swift in Sources */,
 				4AAC4AE823A24A20003B6E83 /* Util.swift in Sources */,
 				75EBB71C25825EE2001ADB8F /* DirectDeviceRotator.swift in Sources */,
 				4A56953920581B6700C8065E /* UserStudyRecordManager.swift in Sources */,
@@ -896,6 +958,7 @@
 				4AAC4AF123A24A20003B6E83 /* ARPPath.swift in Sources */,
 				4AFE55A825EE8A1300333026 /* RotationWithPenPedal.swift in Sources */,
 				4AAC4B2B23A37D17003B6E83 /* CombinePluginSolidHole.swift in Sources */,
+				584EFF4C2833B68700FE645F /* Renderer.swift in Sources */,
 				4AAC4B1323A24C2A003B6E83 /* DateExtensions.swift in Sources */,
 				4AFE55A625EE8A1300333026 /* RotationWithDevice.swift in Sources */,
 				4AC1F5B42524D096002B0A7F /* DataRecorder.swift in Sources */,
@@ -913,7 +976,9 @@
 				4AFE55B425EE8D5D00333026 /* TouchAndPenScalingPlugin.swift in Sources */,
 				7538B71C2596388C00C14DD1 /* PinchScalingPlugin.swift in Sources */,
 				DC28B444200E4353008B77AB /* ViewController.swift in Sources */,
+				584EFF462833B52F00FE645F /* RenderDestination.swift in Sources */,
 				75EFDC4825A3B20700867275 /* RotatorPlugin.swift in Sources */,
+				584EFF502833B6BB00FE645F /* DepthPencilStates.swift in Sources */,
 				EA0C796422F078EE00E820E8 /* ARPenBoxNode.swift in Sources */,
 				4AFE55AA25EE8A1300333026 /* RotationWithDevicePedal.swift in Sources */,
 				4AC1F5A82524C15F002B0A7F /* SelectableNode.swift in Sources */,
@@ -928,12 +993,14 @@
 				7538B718259627C200C14DD1 /* PenRotationPlugin.swift in Sources */,
 				E906324522E3174B008E320F /* Utilities.swift in Sources */,
 				E906324722E31770008E320F /* SnapshotAnchor.swift in Sources */,
+				584EFF482833B57E00FE645F /* MetalUtils.swift in Sources */,
 				4A59BA262244E69400EA23E7 /* CombinationPlugin.swift in Sources */,
 				7538B71A2596298000C14DD1 /* PenRotator.swift in Sources */,
 				DC28B46D200E4E6E008B77AB /* MarkerBox.swift in Sources */,
 				75152A912573B8750051E15D /* PenRayScalingPlugin.swift in Sources */,
 				75EFDC4425A333A600867275 /* BooleanAction.swift in Sources */,
 				4AC1F5BC2524D1BD002B0A7F /* MovingCursorPlugin.swift in Sources */,
+				584EFF4E2833B6A000FE645F /* PipelineStates.swift in Sources */,
 				DC28B469200E4C43008B77AB /* CylinderLine.swift in Sources */,
 				E9B530632487965A0051C0C3 /* MultipeerSession.swift in Sources */,
 				4AAC4B0E23A24A6E003B6E83 /* Registry.mm in Sources */,
@@ -944,6 +1011,7 @@
 				4AC1F5A42524C0AD002B0A7F /* HapticMenu.swift in Sources */,
 				4AAC4B2A23A37D17003B6E83 /* RevolvePluginTwoProfiles.swift in Sources */,
 				4AAC4AF323A24A20003B6E83 /* OCCTAPI.swift in Sources */,
+				584EFF442833B50E00FE645F /* BufferView.swift in Sources */,
 				4AC1F5AC2524C817002B0A7F /* MovingCursorMenu.swift in Sources */,
 				4AA09F9024DD508B00B59F9E /* DepthRayPlugin.swift in Sources */,
 				4AFE55A925EE8A1300333026 /* RotationWithPen.swift in Sources */,
@@ -959,6 +1027,7 @@
 				7538B7142595FC2A00C14DD1 /* TSRotationPlugin.swift in Sources */,
 				4AAC4AE923A24A20003B6E83 /* ARPSphere.swift in Sources */,
 				4AAC4AFE23A24A3F003B6E83 /* TaskTimeLogger.swift in Sources */,
+				584EFF522833B6CF00FE645F /* VertexDescriptors.swift in Sources */,
 				4AAC4B2923A37D17003B6E83 /* LoftPlugin.swift in Sources */,
 				4AAC4AFA23A24A3F003B6E83 /* ButtonEvents.swift in Sources */,
 				4A895F0C2052D46000CC2C8E /* CubeByExtractionPlugin.swift in Sources */,
@@ -980,6 +1049,7 @@
 				DC28B467200E4BF1008B77AB /* PaintPlugin.swift in Sources */,
 				4AC1F5BB2524D1BD002B0A7F /* HapticMenuPlugin.swift in Sources */,
 				E983D24822ABF3830000B8D5 /* CylinderByDraggingPlugin.swift in Sources */,
+				584EFF4A2833B5AB00FE645F /* Matrix.swift in Sources */,
 				EA0C795F22F078EE00E820E8 /* ARPenStudyNode.swift in Sources */,
 				4AC711C7204EDCBE00CD4239 /* SettingsTableViewController.swift in Sources */,
 				DC28B46B200E4C78008B77AB /* Button.swift in Sources */,

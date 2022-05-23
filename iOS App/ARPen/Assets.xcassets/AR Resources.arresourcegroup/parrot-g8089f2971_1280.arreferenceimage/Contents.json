@@ -1,0 +1,16 @@
+{
+  "images" : [
+    {
+      "filename" : "parrot-g8089f2971_1280.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  },
+  "properties" : {
+    "unit" : "centimeters",
+    "width" : 16.199999999999999
+  }
+}

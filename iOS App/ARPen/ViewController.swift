@@ -12,6 +12,10 @@ import ARKit
 import MultipeerConnectivity
 import RealityKit
 import MetalKit
+import ReplayKit
+import Photos
+import VideoToolbox
+import OSLog
 
 
 
@@ -74,6 +78,20 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
     var sessionIDObservation: NSKeyValueObservation?
     @IBOutlet weak var messageLabel: MessageLabel!
     var joinedMessageDisplayed: Bool = false
+    @IBOutlet weak var pipButton: UIButton!
+    @IBOutlet weak var pipView: MTKView!
+    @IBOutlet weak var screenShareButton: UIButton!
+    @IBOutlet weak var pipViewHeightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var pipViewWidthConstraint: NSLayoutConstraint!
+    let videoProcessor = VideoProcessor()
+    var videoRenderer: Renderer!
+    var lastTrackingState: Bool = false
+    var latestKnownWorldTransform: simd_float4x4 = matrix_identity_float4x4
+    let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as NSString
+    var videoOutputURL : URL!
+    var videoWriter: AVAssetWriter!
+    var videoWriterInput: AVAssetWriterInput!
+    let defaultLog = Logger()
     
     //A standard viewDidLoad
     override func viewDidLoad() {
@@ -87,6 +105,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         self.makeRoundedCorners(button: self.saveModelButton)
         self.makeRoundedCorners(button: self.loadModelButton)
         self.makeRoundedCorners(button: self.shareModelButton)
+        self.makeRoundedCorners(button: self.pipButton)
+        self.makeRoundedCorners(button: self.screenShareButton)
         
         self.undoButton.isHidden = false
         self.undoButton.isEnabled = true
@@ -168,6 +188,21 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         self.menuTableViewController.tableView.backgroundColor = UIColor(white: 0.5, alpha: 0.35)
         
         self.menuView.addSubview(self.menuViewNavigationController!.view)
+        
+        // Configure PiPView
+        guard let device = MTLCreateSystemDefaultDevice() else{
+            fatalError("Unable to get system default device!")
+        }
+        
+        pipView.device = device
+        pipView.backgroundColor = .clear
+        pipView.colorPixelFormat = .bgra8Unorm
+        pipView.depthStencilPixelFormat = .depth32Float_stencil8
+        
+        // configure renderer for the PiPView
+        videoRenderer = Renderer(device: device, renderDestination: pipView)
+        videoRenderer.mtkView(pipView, drawableSizeWillChange: pipView.bounds.size)
+        pipView.delegate = videoRenderer
     }
     
     /**
@@ -179,6 +214,15 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         // Create a session configuration
         let configuration = ARWorldTrackingConfiguration()
         configuration.planeDetection = .horizontal
+        
+        // Config for image tracking to keep content synchronized between devices
+        guard let arImages = ARReferenceImage.referenceImages(inGroupNamed: "AR Resources", bundle: nil)
+        else{
+            return
+        }
+        configuration.detectionImages = arImages
+        configuration.maximumNumberOfTrackedImages = 1
+        
 
         // Run the view's session
         arSceneView.session.run(configuration)
@@ -495,7 +539,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
     
     
     // MARK: - ARSCNViewDelegate
-        
+    
+    
+    /*
     // Invoked when new anchors are added to the scene
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
         switch anchor {
@@ -548,7 +594,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         default:
             print("A differnt ARAnchor has been updated!")
         }
-    }
+    }*/
     
     // MARK: - Persistence: Save and load ARWorldMap
     
@@ -924,7 +970,35 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 fatalError("Received ARPNodeData of an unknown Plugin!")
             }
         }
+        else if let videoFrameData = try? JSONDecoder().decode(VideoFrameData.self, from: data){
+            let sampleBuffer = (videoFrameData.makeSampleBuffer())
+            videoProcessor.decompress(sampleBuffer){[self] imageBuffer,presentationTimeStamp in
+                let width = CGFloat(CVPixelBufferGetWidth(imageBuffer))
+                let height = CGFloat(CVPixelBufferGetHeight(imageBuffer))
+                setPipViewConstraints(width: width, height: height)
+                
+                videoRenderer.enqueueFrame(pixelBuffer: imageBuffer, presentationTimeStamp: presentationTimeStamp, inverseProjectionMatrix: videoFrameData.inverseProjectionMatrix, inverseViewMatrix: videoFrameData.inverseViewMatrix)
+            }
+        }
+        else if let videoDataForSaving = try? NSKeyedUnarchiver.unarchivedObject(ofClass: NSData.self, from: data){
+            print("RECEIVED VIDEO FOR SAVING")
+            let path = documentsPath.appendingPathComponent("ScrubbingVideo.mp4")
+            let success = FileManager.default.createFile(atPath: path.description, contents: Data(referencing: videoDataForSaving))
+            print(success)
+            // set filepath for video output
+           // self.videoOutputURL = URL(fileURLWithPath: documentsPath.appendingPathComponent("ScrubbingVideo.mp4"))
+            
+            // If the file exists, we delete it , since we only ever need the latest captured video
+            /*do {
+                try FileManager.default.removeItem(at: videoOutputURL)
+            }catch{
+                print("Error while deleting old file, maybe it didnt exist?: \(error).")
+            }*/
+            
+            //FileManager.default.createFile(atPath: documentsPath.description, contents: videoDataForSaving as Data)
+        }
     }
+
     
     func peerDiscovered(_peer: MCPeerID) -> Bool{
         guard let multipeerSession = multipeerSession else {
@@ -979,6 +1053,160 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         default:
             break
         }
+    }
+    
+    //Show or hide the PiP Window
+    @IBAction func pipHidden(_ sender: UIButton) {
+        pipView.isHidden = !pipView.isHidden
+    }
+    
+    //Set the pipViewConstraints to keep the correct aspect ratio between devices
+    func setPipViewConstraints(width: CGFloat, height: CGFloat){
+        DispatchQueue.main.async {
+            [self] in
+            pipViewWidthConstraint.constant = width / pipView.contentScaleFactor
+            pipViewHeightConstraint.constant = height / pipView.contentScaleFactor
+        }
+    }
+    
+    @IBAction func shareScreen(_ sender: Any) {
+        if RPScreenRecorder.shared().isRecording {
+            RPScreenRecorder.shared().stopCapture{ error in
+                guard let _ = error else{
+                    print("\(error?.localizedDescription ?? "Stopped ScreenShare")")
+                    return
+                }
+            }
+            self.videoWriterInput.markAsFinished()
+            self.videoWriter.finishWriting {
+                print("Finished writing the video.")
+                PHPhotoLibrary.shared().performChanges({
+                    PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: self.videoOutputURL)
+                })
+                {saved, error in
+                    if saved {
+                        DispatchQueue.main.async {
+                            let alertController = UIAlertController(title: "Your video was successfully saved", message: nil, preferredStyle: .alert)
+                            let defaultAction = UIAlertAction(title: "OK", style: .default, handler: {action in self.sendVideo()})
+                            alertController.addAction(defaultAction)
+                            self.present(alertController, animated: true,completion: nil)
+                        }
+                    }
+                    if error != nil {
+                        print("Video did not save for some reason: \(error!.localizedDescription)")
+                        print("DebugDescription: \(error.debugDescription)")
+                    }
+                }
+            }
+        }
+        else{
+            // set filepath for video output
+            self.videoOutputURL = URL(fileURLWithPath: documentsPath.appendingPathComponent("ScrubbingVideo.mp4"))
+            
+            // If the file exists, we delete it , since we only ever need the latest captured video
+            do {
+                try FileManager.default.removeItem(at: videoOutputURL)
+            }catch{
+                print("Error while deleting old file, maybe it didnt exist?: \(error).")
+            }
+            
+            // Setup VideoWriter
+            do {
+                try videoWriter = AVAssetWriter(outputURL: videoOutputURL, fileType: AVFileType.mp4)
+            } catch let writerError as NSError{
+                print("Error opening the video file: \(writerError).")
+                videoWriter = nil
+                return
+            }
+            
+            // Video Settings
+            let videoSettings: [String : Any] = [
+                AVVideoCodecKey : AVVideoCodecType.h264,
+                AVVideoWidthKey : 1920,
+                AVVideoHeightKey: 1080
+            ]
+            
+            // Create Asset Writer input which writes the video output with the defined videosettings
+            videoWriterInput = AVAssetWriterInput(mediaType: AVMediaType.video, outputSettings: videoSettings)
+            videoWriter.add(videoWriterInput)
+            
+            RPScreenRecorder.shared().startCapture{
+                [self] (sampleBuffer, type, error) in
+                if type == .video {
+                    // Writing Process
+                    if self.videoWriter.status == AVAssetWriter.Status.unknown{
+                        if ((self.videoWriter?.startWriting) != nil){
+                            print("Starting Writng")
+                            self.videoWriter.startWriting()
+                            self.videoWriter.startSession(atSourceTime: CMSampleBufferGetPresentationTimeStamp(sampleBuffer))
+                        }
+                    }
+                    
+                    if self.videoWriter.status == AVAssetWriter.Status.writing{
+                        if self.videoWriterInput.isReadyForMoreMediaData == true {
+                            print("Still writing a sample")
+                            if self.videoWriterInput.append(sampleBuffer) == false {
+                                print("There was a problem writing the video!!")
+                            }
+                        }
+                    }
+                    
+                    // Live-feed Process
+                    guard let currentFrame = arSceneView.session.currentFrame else {
+                        print("Could not get currentFrame")
+                        return
+                    }
+                    videoProcessor.compressAndSend(sampleBuffer, arFrame: currentFrame) {
+                        (data) in
+                        self.multipeerSession!.sendToAllPeers(data, reliably: true)
+                    }
+                }
+            }
+        }
+    }
+    
+    func sendVideo(){
+        print("SEND VIDEO DATA")
+        let videoData = NSData(contentsOf: videoOutputURL)
+        let encodedVideoData = try? NSKeyedArchiver.archivedData(withRootObject: videoData!, requiringSecureCoding: true)
+        multipeerSession?.sendToAllPeers(encodedVideoData!, reliably: true)
+    }
+    
+    // Invoked once when a new anchor is added to the scene
+    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
+        if anchor is ARImageAnchor{
+            let coordinateSystem = SCNGeometry.generateCoordinateSystemAxes(color: 1)
+            node.addChildNode(coordinateSystem)
+            //let rotationAroundX = SCNMatrix4(m11: 1, m12: 0, m13: 0, m14: 0, m21: 0, m22: 0, m23: -1, m24: 0, m31: 0, m32: 1, m33: 0, m34: 0, m41: 0, m42: 0, m43: 0, m44: 1)
+          //  let worldTransformMatrix = anchor.transform * simd_float4x4.init(rotationAroundX)
+            arSceneView.session.setWorldOrigin(relativeTransform: anchor.transform)
+            (arSceneView.scene as! PenScene).drawingNode.addChildNode(SCNGeometry.generateCoordinateSystemAxes(color: 2))
+        }
+    }
+    
+    // Invoked when an anchor changes , i.e. tracking status
+    func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
+        guard let imgAnchor = anchor as? ARImageAnchor else { return }
+        if imgAnchor.isTracked {
+            arSceneView.session.setWorldOrigin(relativeTransform: imgAnchor.transform)
+            latestKnownWorldTransform = imgAnchor.transform
+            lastTrackingState = true
+        }
+        else if !imgAnchor.isTracked && lastTrackingState{
+            arSceneView.session.setWorldOrigin(relativeTransform: latestKnownWorldTransform)
+            lastTrackingState = false
+        }
+        /*if imgAnchor.isTracked && !lastTrackingState {
+            lastTrackingState = true
+            //let rotationAroundX = SCNMatrix4(m11: 1, m12: 0, m13: 0, m14: 0, m21: 0, m22: 0, m23: -1, m24: 0, m31: 0, m32: 1, m33: 0, m34: 0, m41: 0, m42: 0, m43: 0, m44: 1)
+            arSceneView.session.setWorldOrigin(relativeTransform: imgAnchor.transform)
+            print("World origin was reset after relocating the imgAnchor")
+        }
+        else if !imgAnchor.isTracked && lastTrackingState{
+            lastTrackingState = false
+            arSceneView.session.setWorldOrigin(relativeTransform: imgAnchor.transform)
+            print("Wolrd origin was set to the last known position of the imgAnchor")
+        }*/
     }
     
     
