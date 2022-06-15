@@ -16,6 +16,7 @@ import ReplayKit
 import Photos
 import VideoToolbox
 import OSLog
+import AVKit
 
 
 
@@ -83,6 +84,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
     @IBOutlet weak var screenShareButton: UIButton!
     @IBOutlet weak var pipViewHeightConstraint: NSLayoutConstraint!
     @IBOutlet weak var pipViewWidthConstraint: NSLayoutConstraint!
+    @IBOutlet weak var playVideoButton: UIButton!
     let videoProcessor = VideoProcessor()
     var videoRenderer: Renderer!
     var lastTrackingState: Bool = false
@@ -107,6 +109,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         self.makeRoundedCorners(button: self.shareModelButton)
         self.makeRoundedCorners(button: self.pipButton)
         self.makeRoundedCorners(button: self.screenShareButton)
+        self.makeRoundedCorners(button: self.playVideoButton)
         
         self.undoButton.isHidden = false
         self.undoButton.isEnabled = true
@@ -983,6 +986,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         else if let videoDataForSaving = try? NSKeyedUnarchiver.unarchivedObject(ofClass: NSData.self, from: data){
             print("RECEIVED VIDEO FOR SAVING")
             let path = documentsPath.appendingPathComponent("ScrubbingVideo.mp4")
+            self.videoOutputURL = URL(fileURLWithPath: path)
             let success = FileManager.default.createFile(atPath: path.description, contents: Data(referencing: videoDataForSaving))
             print(success)
             // set filepath for video output
@@ -1209,6 +1213,15 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         }*/
     }
     
+    @IBAction func playLocalVideo(_ sender: UIButton) {
+        guard let path = self.videoOutputURL else {
+            fatalError("Could not find videofile.")
+        }
+        let player = AVPlayer(url: path)
+        let vc = AVPlayerViewController()
+        vc.player = player
+        self.present(vc, animated: true) {vc.player?.play()}
+    }
     
     
     
