@@ -95,6 +95,8 @@
 		4AFE55B525EE8D5D00333026 /* PointScalingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFE55AF25EE8D5D00333026 /* PointScalingPlugin.swift */; };
 		4AFE55B625EE8D5D00333026 /* PinchScalingTechniquePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFE55B025EE8D5D00333026 /* PinchScalingTechniquePlugin.swift */; };
 		4AFE55B725EE8D5D00333026 /* ScrollScalingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFE55B125EE8D5D00333026 /* ScrollScalingPlugin.swift */; };
+		581F385F289155E600DF7C05 /* CSVLogger.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 581F385D289155DD00DF7C05 /* CSVLogger.framework */; };
+		581F3860289155E600DF7C05 /* CSVLogger.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 581F385D289155DD00DF7C05 /* CSVLogger.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		584EFF402833B4CD00FE645F /* VideoProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF3F2833B4CD00FE645F /* VideoProcessor.swift */; };
 		584EFF422833B4F100FE645F /* VideoFrameData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF412833B4F100FE645F /* VideoFrameData.swift */; };
 		584EFF442833B50E00FE645F /* BufferView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF432833B50E00FE645F /* BufferView.swift */; };
@@ -106,8 +108,10 @@
 		584EFF502833B6BB00FE645F /* DepthPencilStates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF4F2833B6BB00FE645F /* DepthPencilStates.swift */; };
 		584EFF522833B6CF00FE645F /* VertexDescriptors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF512833B6CF00FE645F /* VertexDescriptors.swift */; };
 		584EFF542833B6F100FE645F /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF532833B6F100FE645F /* Shaders.metal */; };
+		585138E528ACEF7E008E092D /* SpectatorSharedARPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 585138E428ACEF7E008E092D /* SpectatorSharedARPlugin.swift */; };
 		58562849282E579800806E68 /* MessageLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58562848282E579800806E68 /* MessageLabel.swift */; };
 		5856284B282E765F00806E68 /* ARPNodeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5856284A282E765F00806E68 /* ARPNodeData.swift */; };
+		588A98622893F24C00EA543F /* SharedARPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 588A98612893F24C00EA543F /* SharedARPlugin.swift */; };
 		750292912559C87A00963547 /* ARPPyramid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750292902559C87A00963547 /* ARPPyramid.swift */; };
 		75152A912573B8750051E15D /* PenRayScalingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75152A902573B8750051E15D /* PenRayScalingPlugin.swift */; };
 		75152A932573BAB30051E15D /* PenRayScaler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75152A922573BAB30051E15D /* PenRayScaler.swift */; };
@@ -172,12 +176,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		4A8EF891203AE2FA00E53E85 /* Embed Frameworks */ = {
+		58932273289008130015EAC5 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				581F3860289155E600DF7C05 /* CSVLogger.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -279,6 +284,7 @@
 		4AFE55AF25EE8D5D00333026 /* PointScalingPlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PointScalingPlugin.swift; sourceTree = "<group>"; };
 		4AFE55B025EE8D5D00333026 /* PinchScalingTechniquePlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinchScalingTechniquePlugin.swift; sourceTree = "<group>"; };
 		4AFE55B125EE8D5D00333026 /* ScrollScalingPlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScrollScalingPlugin.swift; sourceTree = "<group>"; };
+		581F385D289155DD00DF7C05 /* CSVLogger.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CSVLogger.framework; sourceTree = "<group>"; };
 		584EFF3F2833B4CD00FE645F /* VideoProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoProcessor.swift; sourceTree = "<group>"; };
 		584EFF412833B4F100FE645F /* VideoFrameData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoFrameData.swift; sourceTree = "<group>"; };
 		584EFF432833B50E00FE645F /* BufferView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BufferView.swift; sourceTree = "<group>"; };
@@ -291,8 +297,10 @@
 		584EFF512833B6CF00FE645F /* VertexDescriptors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VertexDescriptors.swift; sourceTree = "<group>"; };
 		584EFF532833B6F100FE645F /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 		584EFF552833B71000FE645F /* ShaderTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderTypes.h; sourceTree = "<group>"; };
+		585138E428ACEF7E008E092D /* SpectatorSharedARPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectatorSharedARPlugin.swift; sourceTree = "<group>"; };
 		58562848282E579800806E68 /* MessageLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageLabel.swift; sourceTree = "<group>"; };
 		5856284A282E765F00806E68 /* ARPNodeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARPNodeData.swift; sourceTree = "<group>"; };
+		588A98612893F24C00EA543F /* SharedARPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedARPlugin.swift; sourceTree = "<group>"; };
 		750292902559C87A00963547 /* ARPPyramid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARPPyramid.swift; sourceTree = "<group>"; };
 		75152A902573B8750051E15D /* PenRayScalingPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PenRayScalingPlugin.swift; sourceTree = "<group>"; };
 		75152A922573BAB30051E15D /* PenRayScaler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PenRayScaler.swift; sourceTree = "<group>"; };
@@ -369,6 +377,7 @@
 				4AAC4B1523A24DF6003B6E83 /* occt.framework in Frameworks */,
 				4A56952F2058186800C8065E /* aruco.framework in Frameworks */,
 				4A5695302058186800C8065E /* opencv2.framework in Frameworks */,
+				581F385F289155E600DF7C05 /* CSVLogger.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -545,6 +554,7 @@
 		4AFE559F25EE895900333026 /* InteractionTechniques */ = {
 			isa = PBXGroup;
 			children = (
+				588A98602893F22900EA543F /* SharedAR Techniques */,
 				4AFE55AB25EE8D5D00333026 /* ScalingTechniques */,
 				4AFE55A025EE8A1300333026 /* RotationTechniques */,
 				4AA09F8624DD504600B59F9E /* DepthVisualizationPlugins */,
@@ -614,6 +624,15 @@
 				584EFF552833B71000FE645F /* ShaderTypes.h */,
 			);
 			path = Renderer;
+			sourceTree = "<group>";
+		};
+		588A98602893F22900EA543F /* SharedAR Techniques */ = {
+			isa = PBXGroup;
+			children = (
+				588A98612893F24C00EA543F /* SharedARPlugin.swift */,
+				585138E428ACEF7E008E092D /* SpectatorSharedARPlugin.swift */,
+			);
+			path = "SharedAR Techniques";
 			sourceTree = "<group>";
 		};
 		75152A8F2573B84E0051E15D /* ScalingPlugins */ = {
@@ -690,6 +709,7 @@
 		DC18B2B820237A7200884920 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				581F385D289155DD00DF7C05 /* CSVLogger.framework */,
 				4AAC4B1423A24DF5003B6E83 /* occt.framework */,
 				4A56952D2058186800C8065E /* aruco.framework */,
 				4A56952E2058186800C8065E /* opencv2.framework */,
@@ -832,7 +852,7 @@
 				DC28B438200E4353008B77AB /* Sources */,
 				DC28B439200E4353008B77AB /* Frameworks */,
 				DC28B43A200E4353008B77AB /* Resources */,
-				4A8EF891203AE2FA00E53E85 /* Embed Frameworks */,
+				58932273289008130015EAC5 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -850,7 +870,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 1130;
+				LastUpgradeCheck = 1330;
 				ORGANIZATIONNAME = "RWTH Aachen";
 				TargetAttributes = {
 					DC28B43B200E4353008B77AB = {
@@ -979,6 +999,7 @@
 				584EFF462833B52F00FE645F /* RenderDestination.swift in Sources */,
 				75EFDC4825A3B20700867275 /* RotatorPlugin.swift in Sources */,
 				584EFF502833B6BB00FE645F /* DepthPencilStates.swift in Sources */,
+				588A98622893F24C00EA543F /* SharedARPlugin.swift in Sources */,
 				EA0C796422F078EE00E820E8 /* ARPenBoxNode.swift in Sources */,
 				4AFE55AA25EE8A1300333026 /* RotationWithDevicePedal.swift in Sources */,
 				4AC1F5A82524C15F002B0A7F /* SelectableNode.swift in Sources */,
@@ -992,6 +1013,7 @@
 				4AA09F8D24DD508B00B59F9E /* ShadowPlugin.swift in Sources */,
 				7538B718259627C200C14DD1 /* PenRotationPlugin.swift in Sources */,
 				E906324522E3174B008E320F /* Utilities.swift in Sources */,
+				585138E528ACEF7E008E092D /* SpectatorSharedARPlugin.swift in Sources */,
 				E906324722E31770008E320F /* SnapshotAnchor.swift in Sources */,
 				584EFF482833B57E00FE645F /* MetalUtils.swift in Sources */,
 				4A59BA262244E69400EA23E7 /* CombinationPlugin.swift in Sources */,
@@ -1127,6 +1149,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -1152,12 +1175,13 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VALIDATE_PRODUCT = YES;
 			};
 			name = Debug;
 		};
@@ -1186,6 +1210,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -1205,7 +1230,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
@@ -1227,7 +1252,7 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = ARPen/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "ARPen-Master-Marvin";
@@ -1236,6 +1261,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_WORKSPACE = NO;
 			};
 			name = Debug;
 		};
@@ -1253,7 +1279,7 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = ARPen/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "ARPen-Master-Marvin";
@@ -1261,6 +1287,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "ARPen/ARPen-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_WORKSPACE = NO;
 			};
 			name = Release;
 		};

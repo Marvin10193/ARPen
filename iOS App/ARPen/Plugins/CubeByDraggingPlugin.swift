@@ -139,6 +139,7 @@ class CubeByDraggingPlugin: Plugin {
                         let informationPackage : [String: Any] = ["arpNodeData": arpNodeData]
                         NotificationCenter.default.post(name: .shareARPNodeData, object: nil, userInfo: informationPackage)
                         
+                       
                         /*
                         print(box.geometryColor)
                         var hue: CGFloat = 0

@@ -65,6 +65,10 @@ extension Notification.Name {
     static let virtualObjectDidRenderAtAnchor = Notification.Name("virtualObjectDidRenderAtAnchor")
     static let shareSCNNodeData = Notification.Name("shareSCNNodeData")
     static let shareARPNodeData = Notification.Name("shareARPNodeData")
+    static let labelCommand = Notification.Name("labelCommand")
+    static let nodeCommand = Notification.Name("nodeCommand")
+    static let changeModeCommand = Notification.Name("changeModeCommand")
+    static let changeTaskMode = Notification.Name("changeTaskMode")
 }
 
 @available(iOS 12.0, *)
@@ -187,5 +191,15 @@ extension SCNVector3: Codable {
         try container.encode(x, forKey: .x)
         try container.encode(y, forKey: .y)
         try container.encode(z, forKey: .z)
+    }
+}
+
+extension String{
+    func fileName() -> String{
+        return URL(fileURLWithPath: self).deletingPathExtension().lastPathComponent
+    }
+    
+    func fileExtension() -> String{
+        return URL(fileURLWithPath: self).pathExtension
     }
 }

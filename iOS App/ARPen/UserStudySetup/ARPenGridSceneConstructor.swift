@@ -8,16 +8,22 @@
 
 import Foundation
 import ARKit
+import CSVLogger
+
 
 struct ARPenGridSceneConstructor : ARPenSceneConstructor {
     
     let numberOfStudyNodes = 64
     
+    
     func preparedARPenNodes<T:ARPenStudyNode>(withScene scene : PenScene, andView view: ARSCNView, andStudyNodeType studyNodeClass: T.Type) -> (superNode: SCNNode, studyNodes: [ARPenStudyNode]) {
         var studyNodes : [ARPenStudyNode] = []
         let superNode = SCNNode()
+    
+
         
         let cubesPerDimension = Int(floor(pow(Double(numberOfStudyNodes), 1/3)))
+        print(cubesPerDimension)
         
         
         let screenCenterPosition = view.unprojectPoint(SCNVector3(x: Float(view.frame.width) / 2.0, y: Float(view.frame.height / 2.0), z: 0))
@@ -71,6 +77,14 @@ struct ARPenGridSceneConstructor : ARPenSceneConstructor {
             x += 0.1
             
         }
+        
+        /*let log = CSVLogFile(name: "Demo1", inDirectory: nil, options: .lineNumbering)
+        log.header = "PosX,PosY,PosZ"
+        studyNodes.forEach({log.logObjects(in: [$0.position.x,$0.position.y,$0.position.z])})*/
+        
+        
+        
+        
         studyNodes.shuffle()
         studyNodes.forEach({superNode.addChildNode($0)})
         return (superNode, studyNodes)

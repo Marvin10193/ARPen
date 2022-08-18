@@ -17,7 +17,7 @@ import Photos
 import VideoToolbox
 import OSLog
 import AVKit
-
+import TabularData
 
 
 /**
@@ -81,10 +81,16 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
     var joinedMessageDisplayed: Bool = false
     @IBOutlet weak var pipButton: UIButton!
     @IBOutlet weak var pipView: MTKView!
-    @IBOutlet weak var screenShareButton: UIButton!
     @IBOutlet weak var pipViewHeightConstraint: NSLayoutConstraint!
     @IBOutlet weak var pipViewWidthConstraint: NSLayoutConstraint!
-    @IBOutlet weak var playVideoButton: UIButton!
+    @IBOutlet weak var raySettingButton: UIButton!
+    @IBOutlet weak var opacitySettingButton: UIButton!
+    @IBOutlet weak var baseSettingButton: UIButton!
+    @IBOutlet weak var videoSettingButton: UIButton!
+    
+    
+    var currentScene = 1
+    
     let videoProcessor = VideoProcessor()
     var videoRenderer: Renderer!
     var lastTrackingState: Bool = false
@@ -108,8 +114,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         self.makeRoundedCorners(button: self.loadModelButton)
         self.makeRoundedCorners(button: self.shareModelButton)
         self.makeRoundedCorners(button: self.pipButton)
-        self.makeRoundedCorners(button: self.screenShareButton)
-        self.makeRoundedCorners(button: self.playVideoButton)
+        self.makeRoundedCorners(button: self.raySettingButton)
+        self.makeRoundedCorners(button: self.opacitySettingButton)
+        self.makeRoundedCorners(button: self.videoSettingButton)
+        self.makeRoundedCorners(button: self.baseSettingButton)
         
         self.undoButton.isHidden = false
         self.undoButton.isEnabled = true
@@ -118,6 +126,24 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         self.redoButton.isEnabled = true
         
         self.shareModelButton.isHidden = true
+        
+        //Hide the Setting Buttons for SharedAR until plugin is Selected
+        self.pipButton.isHidden = true
+        self.pipButton.isEnabled = true
+        
+        
+        self.raySettingButton.isHidden = true
+        self.raySettingButton.isEnabled = true
+        
+        
+        self.opacitySettingButton.isHidden = true
+        self.opacitySettingButton.isEnabled = true
+        
+        self.videoSettingButton.isHidden = true
+        self.videoSettingButton.isEnabled = true
+        
+        self.baseSettingButton.isHidden = true
+        self.baseSettingButton.isEnabled = true
         
         // Create a new scene
         let scene = PenScene(named: "art.scnassets/ship.scn")!
@@ -177,6 +203,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         // Notifcations for shared AR functions
         NotificationCenter.default.addObserver(self, selector: #selector(handleSharedStateChange(_:)), name: Notification.Name.shareSCNNodeData, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleSharedStateChange(_:)), name: Notification.Name.shareARPNodeData, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleSharedStateChange(_:)), name: Notification.Name.labelCommand, object:  nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleSharedStateChange(_:)), name: Notification.Name.nodeCommand, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleSharedStateChange(_:)), name: Notification.Name.changeModeCommand, object : nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleSharedStateChange(_:)), name: Notification.Name.changeTaskMode, object: nil)
         
 //        // Enable host-guest sharing to share ARWorldMap
 //        multipeerSession = MultipeerSession(receivedDataHandler: receivedData)
@@ -364,9 +394,23 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         if newActivePlugin.isExperimentalPlugin {
             self.undoButton.isHidden = true
             self.redoButton.isHidden = true
+            
+            if newActivePlugin is SharedARPlugin{
+                self.raySettingButton.isHidden = false
+                self.opacitySettingButton.isHidden = false
+                self.pipButton.isHidden = false
+                self.baseSettingButton.isHidden = false
+                self.videoSettingButton.isHidden = false
+            }
         } else {
             self.undoButton.isHidden = false
             self.redoButton.isHidden = false
+            
+            self.raySettingButton.isHidden = true
+            self.opacitySettingButton.isHidden = true
+            self.pipButton.isHidden = true
+            self.baseSettingButton.isHidden = true
+            self.videoSettingButton.isHidden = true
         }
         
         
@@ -890,7 +934,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                     (arSceneView.scene as! PenScene).drawingNode.addChildNode(receivedNode)
                     break
                 }
-            case "currentExtractionBoxNode:":
+            case "currentExtractionBoxNode":
                 if ((arSceneView.scene as! PenScene).drawingNode.childNodes.contains(where: {$0.name == "currentExtractionBoxNode"})){
                     (arSceneView.scene as! PenScene).drawingNode.childNodes.first(where: {$0.name == "currentExtractionBoxNode"})?.geometry = receivedNode.geometry
                     break
@@ -908,7 +952,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                     (arSceneView.scene as! PenScene).drawingNode.addChildNode(receivedNode)
                     break
                 }
-            case "currentDragPyramidNode:":
+            case "currentDragPyramidNode":
                 if ((arSceneView.scene as! PenScene).drawingNode.childNodes.contains(where: {$0.name == "currentDragPyramidNode"})){
                     (arSceneView.scene as! PenScene).drawingNode.childNodes.first(where: {$0.name == "currentDragPyramidNode"})?.geometry = receivedNode.geometry
                     break
@@ -916,6 +960,31 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 else{
                     (arSceneView.scene as! PenScene).drawingNode.addChildNode(receivedNode)
                     break
+                }
+            case "cameraToPen":
+                if(pluginManager.penScene.drawingNode.childNodes.contains(where: {$0.name == "cameraToPen"})){
+                    pluginManager.penScene.drawingNode.childNodes.first(where: {$0.name == "cameraToPen"})?.transform = receivedNode.transform
+                    pluginManager.penScene.drawingNode.childNodes.first(where: {$0.name == "cameraToPen"})?.position = receivedNode.position
+                }
+                else{
+                    pluginManager.penScene.drawingNode.addChildNode(receivedNode)
+                }
+            case "penToNode":
+                if(pluginManager.penScene.drawingNode.childNodes.contains(where: {$0.name == "penToNode"})){
+                    pluginManager.penScene.drawingNode.childNodes.first(where: {$0.name == "penToNode"})?.transform = receivedNode.transform
+                    pluginManager.penScene.drawingNode.childNodes.first(where: {$0.name == "penToNode"})?.position = receivedNode.position
+                }
+                else{
+                    pluginManager.penScene.drawingNode.addChildNode(receivedNode)
+                }
+            case "renderedRay":
+                if(pluginManager.penScene.drawingNode.childNodes.contains(where: {$0.name == "renderedRay"})){
+                    pluginManager.penScene.drawingNode.childNodes.first(where: {$0.name == "renderedRay"})?.transform = receivedNode.transform
+                    pluginManager.penScene.drawingNode.childNodes.first(where: {$0.name == "renderedRay"})?.position = receivedNode.position
+                    pluginManager.penScene.drawingNode.childNodes.first(where: {$0.name == "renderedRay"})?.geometry = receivedNode.geometry
+                }
+                else{
+                    pluginManager.penScene.drawingNode.addChildNode(receivedNode)
                 }
             default:
                 messageLabel.displayMessage("Unknown Node-Type received!")
@@ -982,7 +1051,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 
                 videoRenderer.enqueueFrame(pixelBuffer: imageBuffer, presentationTimeStamp: presentationTimeStamp, inverseProjectionMatrix: videoFrameData.inverseProjectionMatrix, inverseViewMatrix: videoFrameData.inverseViewMatrix)
             }
-        }
+        }/* DELETE THIS IN THE FUTURE
         else if let videoDataForSaving = try? NSKeyedUnarchiver.unarchivedObject(ofClass: NSData.self, from: data){
             print("RECEIVED VIDEO FOR SAVING")
             let path = documentsPath.appendingPathComponent("ScrubbingVideo.mp4")
@@ -1000,6 +1069,36 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
             }*/
             
             //FileManager.default.createFile(atPath: documentsPath.description, contents: videoDataForSaving as Data)
+        }*/
+        else if let stringCommandData = try? JSONDecoder().decode(String.self, from: data){
+            if self.pluginManager.activePlugin is SpectatorSharedARPlugin{
+                let currentPlugin = self.pluginManager.activePlugin as? SpectatorSharedARPlugin
+                switch stringCommandData {
+                case "Base":
+                    currentPlugin?.currentMode = stringCommandData
+                    currentPlugin?.setUpScene(sceneNumber: currentScene)
+                case "Ray":
+                    currentPlugin?.currentMode = stringCommandData
+                    currentPlugin?.setUpScene(sceneNumber: currentScene)
+                case "Video":
+                    currentPlugin?.currentMode = stringCommandData
+                    currentPlugin?.setUpScene(sceneNumber: currentScene)
+                case "Opacity":
+                    currentPlugin?.currentMode = stringCommandData
+                    currentPlugin?.setUpScene(sceneNumber: currentScene)
+                default:
+                    if let highlightedNode = pluginManager.penScene.drawingNode.childNodes.filter({$0.name == stringCommandData}).first as? ARPenStudyNode{
+                        if self.pluginManager.activePlugin is SpectatorSharedARPlugin{
+                            (self.pluginManager.activePlugin as? SpectatorSharedARPlugin)?.highlightedNode = highlightedNode
+                        }
+                    }
+                    else{
+                        if self.pluginManager.activePlugin is SpectatorSharedARPlugin{
+                            (self.pluginManager.activePlugin as? SpectatorSharedARPlugin)?.highlightedNode = nil
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -1054,6 +1153,27 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 }
                 multipeerSession?.sendToAllPeers(encodedARPNodeData, reliably: true)
             }
+        case .labelCommand:
+            let receivedLabelString = userInfo["labelStringData"] as! String
+            messageLabel.displayMessage(receivedLabelString)
+        case .nodeCommand:
+            let receivedNodeCommand = userInfo["nodeHighlightData"] as? String
+            if !(multipeerSession?.connectedPeers.isEmpty)!{
+                guard let encodedNodeCommandData = try? JSONEncoder().encode(receivedNodeCommand) else {
+                    messageLabel.displayMessage("Could not encode node highlight command!")
+                    fatalError("Could not encode node highlight command!")
+                }
+                multipeerSession?.sendToAllPeers(encodedNodeCommandData, reliably: true)
+            }
+        case .changeModeCommand:
+            let receivedModeChange = userInfo["modeChangeData"] as? String
+            if !(multipeerSession?.connectedPeers.isEmpty)!{
+                guard let encodedModeChangeData = try? JSONEncoder().encode(receivedModeChange) else{
+                    messageLabel.displayMessage("Could not encode mode change command!")
+                    fatalError("Could not encode mode change command!")
+                }
+                multipeerSession?.sendToAllPeers(encodedModeChangeData, reliably: true)
+            }
         default:
             break
         }
@@ -1073,6 +1193,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         }
     }
     
+    /* DELETE THIS IN THE FUTURE
     @IBAction func shareScreen(_ sender: Any) {
         if RPScreenRecorder.shared().isRecording {
             RPScreenRecorder.shared().stopCapture{ error in
@@ -1083,6 +1204,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
             }
             self.videoWriterInput.markAsFinished()
             self.videoWriter.finishWriting {
+                print("Finished writing the Video")
+            }
+            /*self.videoWriter.finishWriting {
                 print("Finished writing the video.")
                 PHPhotoLibrary.shared().performChanges({
                     PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: self.videoOutputURL)
@@ -1091,7 +1215,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                     if saved {
                         DispatchQueue.main.async {
                             let alertController = UIAlertController(title: "Your video was successfully saved", message: nil, preferredStyle: .alert)
-                            let defaultAction = UIAlertAction(title: "OK", style: .default, handler: {action in self.sendVideo()})
+                            //let defaultAction = UIAlertAction(title: "OK", style: .default, handler: {action in self.sendVideo()})
+                            let defaultAction = UIAlertAction(title: "OK", style: .default)
                             alertController.addAction(defaultAction)
                             self.present(alertController, animated: true,completion: nil)
                         }
@@ -1101,7 +1226,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                         print("DebugDescription: \(error.debugDescription)")
                     }
                 }
-            }
+            }*/
         }
         else{
             // set filepath for video output
@@ -1167,13 +1292,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 }
             }
         }
-    }
+    }*/
     
+    //DELETE THIS IN THE FUTURE
     func sendVideo(){
         print("SEND VIDEO DATA")
         let videoData = NSData(contentsOf: videoOutputURL)
-        let encodedVideoData = try? NSKeyedArchiver.archivedData(withRootObject: videoData!, requiringSecureCoding: true)
-        multipeerSession?.sendToAllPeers(encodedVideoData!, reliably: true)
+        let encodedVideoData = try? NSKeyedArchiver.archivedData(withRootObject: videoData!, requiringSecureCoding: false)
+        multipeerSession?.sendToAllPeers(encodedVideoData!, reliably: false)
     }
     
     // Invoked once when a new anchor is added to the scene
@@ -1184,45 +1310,120 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
             //let rotationAroundX = SCNMatrix4(m11: 1, m12: 0, m13: 0, m14: 0, m21: 0, m22: 0, m23: -1, m24: 0, m31: 0, m32: 1, m33: 0, m34: 0, m41: 0, m42: 0, m43: 0, m44: 1)
           //  let worldTransformMatrix = anchor.transform * simd_float4x4.init(rotationAroundX)
             arSceneView.session.setWorldOrigin(relativeTransform: anchor.transform)
-            (arSceneView.scene as! PenScene).drawingNode.addChildNode(SCNGeometry.generateCoordinateSystemAxes(color: 2))
+            //(arSceneView.scene as! PenScene).drawingNode.addChildNode(SCNGeometry.generateCoordinateSystemAxes(color: 2))
         }
     }
     
     // Invoked when an anchor changes , i.e. tracking status
     func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
         guard let imgAnchor = anchor as? ARImageAnchor else { return }
-        if imgAnchor.isTracked {
+        if imgAnchor.isTracked && !lastTrackingState{
             arSceneView.session.setWorldOrigin(relativeTransform: imgAnchor.transform)
             latestKnownWorldTransform = imgAnchor.transform
             lastTrackingState = true
         }
         else if !imgAnchor.isTracked && lastTrackingState{
-            arSceneView.session.setWorldOrigin(relativeTransform: latestKnownWorldTransform)
+           // arSceneView.session.setWorldOrigin(relativeTransform: latestKnownWorldTransform)
             lastTrackingState = false
         }
-        /*if imgAnchor.isTracked && !lastTrackingState {
-            lastTrackingState = true
-            //let rotationAroundX = SCNMatrix4(m11: 1, m12: 0, m13: 0, m14: 0, m21: 0, m22: 0, m23: -1, m24: 0, m31: 0, m32: 1, m33: 0, m34: 0, m41: 0, m42: 0, m43: 0, m44: 1)
-            arSceneView.session.setWorldOrigin(relativeTransform: imgAnchor.transform)
-            print("World origin was reset after relocating the imgAnchor")
-        }
-        else if !imgAnchor.isTracked && lastTrackingState{
-            lastTrackingState = false
-            arSceneView.session.setWorldOrigin(relativeTransform: imgAnchor.transform)
-            print("Wolrd origin was set to the last known position of the imgAnchor")
-        }*/
     }
     
+    
+    //DELETE THIS IN THE FUTURE
     @IBAction func playLocalVideo(_ sender: UIButton) {
-        guard let path = self.videoOutputURL else {
+        /*guard let path = self.videoOutputURL else {
             fatalError("Could not find videofile.")
         }
         let player = AVPlayer(url: path)
         let vc = AVPlayerViewController()
         vc.player = player
-        self.present(vc, animated: true) {vc.player?.play()}
+        self.present(vc, animated: true) {vc.player?.play()}*/
+        let newNode = ARPenStudyNode(withPosition: SCNVector3(-0.155, 0.267, -0.257), andDimension: 0.003)
+        newNode.geometry = SCNBox(width: 0.03, height: 0.03, length: 0.03, chamferRadius: 0)
+        let layer = CALayer()
+        layer.frame = CGRect(x: 0, y: 0, width: 150, height: 150)
+        layer.backgroundColor = UIColor.white.cgColor
+        var textLayer = CATextLayer()
+        textLayer.frame = layer.bounds
+        textLayer.fontSize = layer.bounds.size.height
+        textLayer.fontSize = textLayer.fontSize - 20.0
+        textLayer.string = "12"
+        textLayer.alignmentMode = CATextLayerAlignmentMode.left
+        textLayer.foregroundColor = UIColor.black.cgColor
+        textLayer.display()
+        layer.addSublayer(textLayer)
+        newNode.geometry?.firstMaterial?.diffuse.contents = layer
+        (arSceneView.scene as! PenScene).drawingNode.addChildNode(newNode)
     }
     
+    
+    @IBAction func enableBaseSetting(_ sender: UIButton) {
+        if pluginManager.activePlugin is SharedARPlugin {
+            let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
+            currentPlugin?.currentMode = "Base"
+            currentPlugin?.setupScene(sceneNumber: currentScene)
+            let informationPackage : [String : Any] = ["modeChangeData": "Base"]
+            NotificationCenter.default.post(name: .changeModeCommand, object: nil, userInfo: informationPackage)
+        }
+    }
+    
+    @IBAction func enableOpacitySetting(_ sender: UIButton) {
+        if pluginManager.activePlugin is SharedARPlugin {
+            let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
+            currentPlugin?.currentMode = "Opacity"
+            currentPlugin?.setupScene(sceneNumber: currentScene)
+            let informationPackage : [String : Any] = ["modeChangeData": "Opacity"]
+            NotificationCenter.default.post(name: .changeModeCommand, object: nil, userInfo: informationPackage)
+        }
+    }
+    
+    
+    @IBAction func enableRaySetting(_ sender: UIButton) {
+        if pluginManager.activePlugin is SharedARPlugin {
+            let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
+            currentPlugin?.currentMode = "Ray"
+            currentPlugin?.setupScene(sceneNumber: currentScene)
+            let informationPackage : [String : Any] = ["modeChangeData": "Ray"]
+            NotificationCenter.default.post(name: .changeModeCommand, object: nil, userInfo: informationPackage)
+        }
+
+    }
+    
+    @IBAction func enableVideoSetting(_ sender: UIButton) {
+        if pluginManager.activePlugin is SharedARPlugin {
+            let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
+            currentPlugin?.currentMode = "Video"
+            currentPlugin?.setupScene(sceneNumber: currentScene)
+            let informationPackage : [String : Any] = ["modeChangeData": "Video"]
+            NotificationCenter.default.post(name: .changeModeCommand, object: nil, userInfo: informationPackage)
+        }
+    
+        
+        if RPScreenRecorder.shared().isRecording {
+            RPScreenRecorder.shared().stopCapture{ error in
+                guard let _ = error else{
+                    self.messageLabel.displayMessage("\(error?.localizedDescription ?? "Stopped ScreenShare")")
+                    return
+                }
+            }
+        }
+        else{
+            RPScreenRecorder.shared().startCapture{
+                [self] (sampleBuffer, type, error) in
+                if type == .video {
+                    guard let currentFrame = arSceneView.session.currentFrame else {
+                        self.messageLabel.displayMessage("Could not get currentFrame")
+                        return
+                    }
+                    videoProcessor.compressAndSend(sampleBuffer, arFrame: currentFrame) {
+                        (data) in
+                        self.multipeerSession?.sendToAllPeers(data, reliably: false)
+                    }
+                }
+            }
+        }
+        
+    }
     
     
     

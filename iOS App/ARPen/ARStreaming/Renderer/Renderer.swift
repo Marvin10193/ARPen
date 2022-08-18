@@ -33,7 +33,7 @@ class Renderer: NSObject {
     var lastDrawnPTS = CMTime.zero
     var lastDrawnInverseProjectionMatrix: Matrix?
     var lastDrawnInverseViewMatrix: Matrix?
-    let maxFramesInQueue = 30
+    let maxFramesInQueue = 60
     
     init(device: MTLDevice, renderDestination: RenderDestination) {
         
