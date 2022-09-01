@@ -112,6 +112,7 @@
 		58562849282E579800806E68 /* MessageLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58562848282E579800806E68 /* MessageLabel.swift */; };
 		5856284B282E765F00806E68 /* ARPNodeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5856284A282E765F00806E68 /* ARPNodeData.swift */; };
 		588A98622893F24C00EA543F /* SharedARPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 588A98612893F24C00EA543F /* SharedARPlugin.swift */; };
+		58E8625828BB7AF60004FFF5 /* sequenceData.json in Resources */ = {isa = PBXBuildFile; fileRef = 58E8625728BB7AF60004FFF5 /* sequenceData.json */; };
 		750292912559C87A00963547 /* ARPPyramid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750292902559C87A00963547 /* ARPPyramid.swift */; };
 		75152A912573B8750051E15D /* PenRayScalingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75152A902573B8750051E15D /* PenRayScalingPlugin.swift */; };
 		75152A932573BAB30051E15D /* PenRayScaler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75152A922573BAB30051E15D /* PenRayScaler.swift */; };
@@ -301,6 +302,7 @@
 		58562848282E579800806E68 /* MessageLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageLabel.swift; sourceTree = "<group>"; };
 		5856284A282E765F00806E68 /* ARPNodeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARPNodeData.swift; sourceTree = "<group>"; };
 		588A98612893F24C00EA543F /* SharedARPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedARPlugin.swift; sourceTree = "<group>"; };
+		58E8625728BB7AF60004FFF5 /* sequenceData.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = sequenceData.json; sourceTree = "<group>"; };
 		750292902559C87A00963547 /* ARPPyramid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARPPyramid.swift; sourceTree = "<group>"; };
 		75152A902573B8750051E15D /* PenRayScalingPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PenRayScalingPlugin.swift; sourceTree = "<group>"; };
 		75152A922573BAB30051E15D /* PenRayScaler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PenRayScaler.swift; sourceTree = "<group>"; };
@@ -765,6 +767,7 @@
 				DC28B44A200E4353008B77AB /* LaunchScreen.storyboard */,
 				DC28B44D200E4353008B77AB /* Info.plist */,
 				DC28B459200E446F008B77AB /* ARPen-Bridging-Header.h */,
+				58E8625728BB7AF60004FFF5 /* sequenceData.json */,
 			);
 			path = ARPen;
 			sourceTree = "<group>";
@@ -908,6 +911,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				58E8625828BB7AF60004FFF5 /* sequenceData.json in Resources */,
 				DC28B442200E4353008B77AB /* art.scnassets in Resources */,
 				4A27E28123A0F9E300C4BF75 /* SecondButton.xib in Resources */,
 				DC28B44C200E4353008B77AB /* LaunchScreen.storyboard in Resources */,

@@ -69,6 +69,11 @@ extension Notification.Name {
     static let nodeCommand = Notification.Name("nodeCommand")
     static let changeModeCommand = Notification.Name("changeModeCommand")
     static let changeTaskMode = Notification.Name("changeTaskMode")
+    static let changeSceneCommand = Notification.Name("changeSceneCommand")
+    static let changePositionCommand = Notification.Name("changePositionCommand")
+    static let infoLabelCommand = Notification.Name("infoLabelCommand")
+    static let measurementCommand = Notification.Name("measurementCommand")
+    static let alertCommand = Notification.Name("alertCommand")
 }
 
 @available(iOS 12.0, *)
@@ -201,5 +206,33 @@ extension String{
     
     func fileExtension() -> String{
         return URL(fileURLWithPath: self).pathExtension
+    }
+}
+
+struct ResponseData : Decodable{
+    var id: [ID]
+}
+
+struct ID: Decodable{
+    var scene: [Scene]
+}
+
+struct Scene: Decodable{
+    var sequence: [Sequence]
+}
+
+struct Sequence : Decodable{
+    var node : [ColoredNode]
+}
+
+struct ColoredNode : Decodable{
+    var index : Int
+}
+
+extension Array{
+    func chunked(into size: Int) -> [[Element]]{
+        return stride(from: 0, to: count, by: size).map{
+            Array(self[$0 ..< Swift.min($0 + size,count)])
+        }
     }
 }

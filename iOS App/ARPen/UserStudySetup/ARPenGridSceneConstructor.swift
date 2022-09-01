@@ -23,7 +23,6 @@ struct ARPenGridSceneConstructor : ARPenSceneConstructor {
 
         
         let cubesPerDimension = Int(floor(pow(Double(numberOfStudyNodes), 1/3)))
-        print(cubesPerDimension)
         
         
         let screenCenterPosition = view.unprojectPoint(SCNVector3(x: Float(view.frame.width) / 2.0, y: Float(view.frame.height / 2.0), z: 0))
@@ -45,11 +44,11 @@ struct ARPenGridSceneConstructor : ARPenSceneConstructor {
             
             y = 0.25
             
-            for _ in 0...Int(cubesPerDimension/2) {
+            for _ in 0...Int(cubesPerDimension/2 + 1) {
                 
                 z = -0.25
                 
-                for _ in 0...cubesPerDimension {
+                for _ in 0...cubesPerDimension{
                     
                     let dimensionOfBox = 0.03 //+ Double(Int.random(in: 0 ... 1)) * 0.01
                     let range = (-0.025, 0.025)
@@ -57,6 +56,7 @@ struct ARPenGridSceneConstructor : ARPenSceneConstructor {
                     let randomDoubleForX = drand48()
                     let randomDoubleForY = drand48()
                     let randomDoubleForZ = drand48()
+                    
                     
                     let distance = range.1 - range.0
                     let xPositionOffset = range.0 + (randomDoubleForX * distance)
@@ -66,27 +66,28 @@ struct ARPenGridSceneConstructor : ARPenSceneConstructor {
                     arPenStudyNode = studyNodeClass.init(withPosition: SCNVector3Make(Float(x + xPositionOffset), Float(y + yPositionOffset), Float(z + zPositionOffset)), andDimension: Float(dimensionOfBox))
                     studyNodes.append(arPenStudyNode)
                     
-                    z += 0.1
+                    z += 0.09
                     
                 }
                 
-                y += 0.1
+                y += 0.09
                 
             }
             
-            x += 0.1
+            x += 0.09
             
         }
         
-        /*let log = CSVLogFile(name: "Demo1", inDirectory: nil, options: .lineNumbering)
-        log.header = "PosX,PosY,PosZ"
-        studyNodes.forEach({log.logObjects(in: [$0.position.x,$0.position.y,$0.position.z])})*/
-        
-        
-        
         
         studyNodes.shuffle()
+       // let result = studyNodes.chunked(into: 32)
+      //  result[0].forEach({superNode.addChildNode($0)})
         studyNodes.forEach({superNode.addChildNode($0)})
+        
+        
+        
+        
+        
         return (superNode, studyNodes)
     }
     

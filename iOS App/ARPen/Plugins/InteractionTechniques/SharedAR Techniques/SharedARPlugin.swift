@@ -12,17 +12,47 @@ import ARKit
 import TabularData
 import RealityKit
 import MultipeerConnectivity
+import CSVLogger
+import CoreMotion
 
 class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     
     private var csvData : DataFrame?
     private var sceneConstructionResults: (superNode: SCNNode, studyNodes: [ARPenStudyNode])? = nil
-    private var tapGesture : UITapGestureRecognizer?
+
     var currentMode : String?
     var relocationTask: Bool?
+    
+    var timeSinceLast = 0.0
+    var overallTime = 0.0
+    var summedTimeSinceLast = 0.0
+    var timer = Timer()
+    var timerIsRunning = false
+    
+    var logger : CSVLogFile?
+    
+    let userID = "0"
+    
+    var userPosition = "Opposite"
+    
+    let documentsDirectory = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+    let fileManager = FileManager.default
+    
+    var objectNumber = 0
+    var sequenceNumber = 0
 
+    var sceneNumber = 0
+    
+    var sequenceData : [ID] = []
+    
+    
+    
     
     override init(){
+        self.relocationTask = false
+        self.currentMode = "Base"
+        self.logger = CSVLogFile()
+        
         super.init()
         self.pluginImage = UIImage.init(named: "CubeByExtractionPlugin")
         self.pluginInstructionsImage = UIImage.init(named: "ExtrudePluginInstructions")
@@ -32,7 +62,9 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         self.pluginDisabledImage = UIImage.init(named: "CubeByExtractionPluginDisabled")
         self.isExperimentalPlugin = true
         
-        self.relocationTask = false
+        DispatchQueue.main.async {
+            self.sequenceData = self.loadJson(filename: "sequenceData")!
+        }
     }
     
     
@@ -43,24 +75,32 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         pluginManager?.allowTouchInput = true
         
         self.currentView = view
-        self.setupScene(sceneNumber: 1)
-        self.currentMode = "Base"
         self.relocationTask = false
+        self.currentMode = "Base"
+        self.setupScene(sceneNumber: 0)
         
         self.pluginManager?.penScene.rootNode.addChildNode((self.pluginManager?.penScene.pencilPoint)!)
+
+        
     }
     
     override func deactivatePlugin() {
+        timer.invalidate()
         super.deactivatePlugin()
+    
     }
+    
+
     
     func setupScene(sceneNumber: Int){
         self.resetScene()
-        
+        self.objectNumber = 0
+        self.sequenceNumber = 0
+        self.sceneNumber = sceneNumber
         
         var url = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
         switch sceneNumber{
-        case 1 :
+        case 0 :
             url = url.appendingPathComponent("Demo1").appendingPathExtension("csv")
             guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
                 let informationPackage : [String: Any] = ["labelStringData": "Could not load CSV!"]
@@ -69,10 +109,145 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             }
             self.csvData = csvData
             self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
+            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
+            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+        case 1:
+            url = url.appendingPathComponent("Scene1").appendingPathExtension("csv")
+            guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
+                let informationPackage : [String: Any] = ["labelStringData": "Could not load CSV!"]
+                NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
+                return
+            }
+            self.csvData = csvData
+            self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
+            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
+            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+        case 2:
+            url = url.appendingPathComponent("Scene2").appendingPathExtension("csv")
+            guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
+                let informationPackage : [String: Any] = ["labelStringData": "Could not load CSV!"]
+                NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
+                return
+            }
+            self.csvData = csvData
+            self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
+            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
+            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+        case 3:
+            url = url.appendingPathComponent("Scene3").appendingPathExtension("csv")
+            guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
+                let informationPackage : [String: Any] = ["labelStringData": "Could not load CSV!"]
+                NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
+                return
+            }
+            self.csvData = csvData
+            self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
+            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + "Scene" + currentMode! + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
+            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+        case 4:
+            url = url.appendingPathComponent("Scene4").appendingPathExtension("csv")
+            guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
+                let informationPackage : [String: Any] = ["labelStringData": "Could not load CSV!"]
+                NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
+                return
+            }
+            self.csvData = csvData
+            self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
+            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
+            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+        case 5:
+            url = url.appendingPathComponent("Scene5").appendingPathExtension("csv")
+            guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
+                let informationPackage : [String: Any] = ["labelStringData": "Could not load CSV!"]
+                NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
+                return
+            }
+            self.csvData = csvData
+            self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
+            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
+            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+        case 6:
+            url = url.appendingPathComponent("Scene6").appendingPathExtension("csv")
+            guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
+                let informationPackage : [String: Any] = ["labelStringData": "Could not load CSV!"]
+                NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
+                return
+            }
+            self.csvData = csvData
+            self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
+            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
+            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+        case 7:
+            url = url.appendingPathComponent("Scene7").appendingPathExtension("csv")
+            guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
+                let informationPackage : [String: Any] = ["labelStringData": "Could not load CSV!"]
+                NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
+                return
+            }
+            self.csvData = csvData
+            self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
+            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
+            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+        case 8:
+            url = url.appendingPathComponent("Scene8").appendingPathExtension("csv")
+            guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
+                let informationPackage : [String: Any] = ["labelStringData": "Could not load CSV!"]
+                NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
+                return
+            }
+            self.csvData = csvData
+            self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
+            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
+            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+        case 9:
+            url = url.appendingPathComponent("Scene9").appendingPathExtension("csv")
+            guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
+                let informationPackage : [String: Any] = ["labelStringData": "Could not load CSV!"]
+                NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
+                return
+            }
+            self.csvData = csvData
+            self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
+            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
+            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+        case 10:
+            url = url.appendingPathComponent("Scene10").appendingPathExtension("csv")
+            guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
+                let informationPackage : [String: Any] = ["labelStringData": "Could not load CSV!"]
+                NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
+                return
+            }
+            self.csvData = csvData
+            self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
+            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
+            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+        case 11:
+            url = url.appendingPathComponent("Scene11").appendingPathExtension("csv")
+            guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
+                let informationPackage : [String: Any] = ["labelStringData": "Could not load CSV!"]
+                NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
+                return
+            }
+            self.csvData = csvData
+            self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
+            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
+            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+        case 12:
+            url = url.appendingPathComponent("Scene12").appendingPathExtension("csv")
+            guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
+                let informationPackage : [String: Any] = ["labelStringData": "Could not load CSV!"]
+                NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
+                return
+            }
+            self.csvData = csvData
+            self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
+            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
+            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
         default:
             let informationPackage: [String : Any] = ["labelStringData": "Specified scene was not found!"]
             NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
         }
+
     }
     
     
@@ -107,8 +282,76 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         
     }
     
+    
     func onPenClickStarted(at position: SCNVector3, startedButton: Button) {
-        // start end timer in recognition task
+        if !self.relocationTask! && !self.timerIsRunning {
+            if self.highlightedNode?.name == self.sequenceData[Int(self.userID)! - 1].scene[self.sceneNumber-1].sequence[self.sequenceNumber].node[self.objectNumber].index.description{
+                self.timerIsRunning = true
+            
+                if !self.timer.isValid{
+                    self.timer = Timer.scheduledTimer(timeInterval: (1.0/30.0), target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
+                }
+                    
+                self.timeSinceLast = 0.0
+
+                    
+                //Set Label so I can see its currently running
+                let informationPackage : [String : Any] = ["sharedARInfoLabelData": String(currentMode!.prefix(1) + userPosition.prefix(1) + "+")]
+                NotificationCenter.default.post(name: .infoLabelCommand, object: nil, userInfo: informationPackage)
+                
+                //Start Logging for current object on other device
+                if objectNumber == 0{
+                    let startMeasurementInformationPackage : [String : Any] = ["measurementCommandData" : "Start"]
+                    NotificationCenter.default.post(name: .measurementCommand, object: nil, userInfo: startMeasurementInformationPackage)
+                }
+            }
+            else{
+                let informationPackageWrongNode : [String : Any] = ["labelStringData" : "Wrong node by presenter."]
+                NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackageWrongNode)
+            }
+        }
+        else if !self.relocationTask! && self.timerIsRunning {
+            if self.highlightedNode?.name == self.sequenceData[0].scene[self.sceneNumber-1].sequence[self.sequenceNumber].node[self.objectNumber].index.description{
+                self.timerIsRunning = false
+                
+                self.summedTimeSinceLast += self.timeSinceLast
+                    
+                self.logger?.logObjects(in: [self.timeSinceLast,self.summedTimeSinceLast,self.overallTime,self.highlightedNode!.name!])
+                    
+                //Set Label to no Text, so i know its stopped currently
+                let informationPackage : [String : Any] = ["sharedARInfoLabelData": " "]
+                NotificationCenter.default.post(name: .infoLabelCommand, object: nil, userInfo: informationPackage)
+                
+                //Log the current Value for the current object on other device
+                let logMeasurementInformationPackage : [String : Any] = ["measurementCommandData" : "Log"]
+                NotificationCenter.default.post(name: .measurementCommand, object: nil, userInfo: logMeasurementInformationPackage)
+                
+                self.objectNumber += 1
+                if objectNumber == 3 {
+                    self.sequenceNumber += 1
+                    self.objectNumber = 0
+                    self.timer.invalidate()
+                    self.timeSinceLast = 0.0
+                    self.overallTime = 0.0
+                    self.summedTimeSinceLast = 0.0
+                    if self.sequenceNumber == 5{
+                        self.sequenceNumber = 0
+                        let informationPackageDoneMeassuring: [String : Any] = ["labelStringData": "Data Point done, switch task!"]
+                        NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackageDoneMeassuring)
+                    }
+                }
+            }
+            else{
+                let informationPackageWrongNode : [String : Any] = ["labelStringData" : "Presenter left correct node."]
+                NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackageWrongNode)
+            }
+        }
+    }
+    
+    @objc func updateTimer(){
+        self.overallTime += (1.0/30.0)
+        self.timeSinceLast += (1.0/30.0)
+        
     }
     
     var highlightedNode : ARPenStudyNode? = nil{
@@ -119,15 +362,23 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     }
     
     
-    // Same ResetScene as in the Viewcontroller, just so I dont have to use the
+    // Similar ResetScene as in the Viewcontroller, just so I dont have to use the
     // Notification Center or somehow get the correct ViewController to reset the
     // scene, once I change the scene to load on the Sender Device
+    // also invalidating all timers and resetting their values etc.
     func resetScene(){
         guard let penScene = self.pluginManager?.penScene else {return}
         //remove all child nodes from drawing node
         penScene.drawingNode.enumerateChildNodes {(node, pointer) in
             node.removeFromParentNode()
         }
+        self.timer.invalidate()
+        self.timeSinceLast = 0.0
+        self.timerIsRunning = false
+        self.overallTime = 0.0
+        self.summedTimeSinceLast = 0.0
+        self.objectNumber = 0
+        self.sequenceNumber = 0
         //reset recorded actions of undo redo manager
         self.pluginManager?.undoRedoManager.resetUndoRedoManager()
     }
@@ -219,8 +470,25 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         else{
             self.highlightedNode = nil
             
-            let informationPackage : [String : Any] = ["nodeHighlightData" : "Nil"]
-            NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
+            if !self.relocationTask!{
+                let informationPackage : [String : Any] = ["nodeHighlightData" : "Nil"]
+                NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
+            }
         }
+    }
+    
+    func loadJson(filename fileName: String) -> [ID]?{
+        if let url = Bundle.main.url(forResource: fileName, withExtension: "json"){
+            do{
+                let data = try Data(contentsOf: url)
+                let decoder = JSONDecoder()
+                let jsonData = try decoder.decode(ResponseData.self, from: data)
+                return jsonData.id
+            }
+            catch{
+                print("error: \(error)")
+            }
+        }
+        return nil
     }
 }

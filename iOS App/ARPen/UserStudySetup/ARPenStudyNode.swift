@@ -18,7 +18,7 @@ class ARPenStudyNode : SelectableNode {
     var highlighted : Bool = false {
         didSet {
             if highlighted {
-                self.geometry?.firstMaterial?.emission.intensity = 0.5
+                self.geometry?.firstMaterial?.emission.intensity = 1.0
             } else {
                 self.geometry?.firstMaterial?.emission.intensity = 0.0
             }
