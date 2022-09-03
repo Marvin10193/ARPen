@@ -108,6 +108,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
     @IBOutlet weak var changeTaskButton: UIButton!
     @IBOutlet weak var toggleSharedARHelp: UIButton!
     @IBOutlet weak var toggleSharedARHelpLabel: UILabel!
+
     
     
     var currentScene = 0
@@ -121,6 +122,19 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
     var videoWriter: AVAssetWriter!
     var videoWriterInput: AVAssetWriterInput!
     let defaultLog = Logger()
+    var sceneDict = ["Scene1" : 1,
+                     "Scene2" : 2,
+                     "Scene3" : 3,
+                     "Scene4" : 4,
+                     "Scene5" : 5,
+                     "Scene6" : 6,
+                     "Scene7" : 7,
+                     "Scene8" : 8,
+                     "Scene9" : 9,
+                     "Scene10": 10,
+                     "Scene11": 11,
+                     "Scene12": 12
+                                  ]
     
     //A standard viewDidLoad
     override func viewDidLoad() {
@@ -238,6 +252,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         
         self.sharedARInfoLabel.isHidden = true
         
+        
         // Create a new scene
         let scene = PenScene(named: "art.scnassets/ship.scn")!
         scene.markerBox = MarkerBox()
@@ -305,6 +320,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         NotificationCenter.default.addObserver(self, selector: #selector(handleSharedStateChange(_:)), name: Notification.Name.infoLabelCommand, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleSharedStateChange(_:)), name: Notification.Name.measurementCommand, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleSharedStateChange(_:)), name: Notification.Name.alertCommand, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleSharedStateChange(_:)), name: Notification.Name.sequenceData, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleSharedStateChange(_:)), name: Notification.Name.trialLogConfirmation, object: nil)
         
 //        // Enable host-guest sharing to share ARWorldMap
 //        multipeerSession = MultipeerSession(receivedDataHandler: receivedData)
@@ -519,12 +536,15 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 self.toggleSharedARHelp.isHidden = false
                 self.settingsButton.isHidden = true
                 self.pluginInstructionsLookupButton.isHidden = true
+
             }
             if newActivePlugin is SpectatorSharedARPlugin{
                 self.toggleSharedARHelpLabel.isHidden = false
                 self.toggleSharedARHelp.isHidden = false
                 self.settingsButton.isHidden = true
                 self.pluginInstructionsLookupButton.isHidden = true
+                self.softwarePenButton.isHidden = true
+                self.menuToggleButton.isHidden = true
             }
         } else {
             self.undoButton.isHidden = false
@@ -1118,7 +1138,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                         pluginManager.penScene.drawingNode.addChildNode(receivedNode)
                     }
                 }
-                else {
+                else if !self.rayToggledOn {
                     if(pluginManager.penScene.drawingNode.childNodes.contains(where: ({$0.name == "renderedRay"}))){
                         pluginManager.penScene.drawingNode.childNodes.first(where: {$0.name == "renderedRay"})?.removeFromParentNode()
                     }
@@ -1189,6 +1209,12 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 videoRenderer.enqueueFrame(pixelBuffer: imageBuffer, presentationTimeStamp: presentationTimeStamp, inverseProjectionMatrix: videoFrameData.inverseProjectionMatrix, inverseViewMatrix: videoFrameData.inverseViewMatrix)
             }
         }
+        else if let sequenceData = try? JSONDecoder().decode([String].self, from: data){
+            if self.pluginManager.activePlugin is SpectatorSharedARPlugin{
+                let currentPlugin = self.pluginManager.activePlugin as! SpectatorSharedARPlugin
+                currentPlugin.currentSequence = sequenceData
+            }
+        }
         else if let stringCommandData = try? JSONDecoder().decode(String.self, from: data){
             if self.pluginManager.activePlugin is SharedARPlugin{
                 let currentPlugin = self.pluginManager.activePlugin as! SharedARPlugin
@@ -1196,7 +1222,41 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 case "ChangeTask" :
                     DispatchQueue.main.async {
                         currentPlugin.relocationTask?.toggle()
-                        currentPlugin.setupScene(sceneNumber: self.currentScene)
+                        currentPlugin.highlightedNode = nil
+                    }
+                case "Confirm sequence?":
+                    DispatchQueue.main.async {
+                        let confirmationController = UIAlertController(title: stringCommandData, message: nil, preferredStyle: .alert)
+                        let confirmAction = UIAlertAction(title: "Save", style: .default, handler: {
+                            action in
+                            currentPlugin.logger?.writeOut()
+                            let confirmationData = "WriteOut"
+                            if !(self.multipeerSession?.connectedPeers.isEmpty)!{
+                                guard let encodedConfirmationData = try? JSONEncoder().encode(confirmationData) else{
+                                    self.messageLabel.displayMessage("Could not encode confirmation data!")
+                                    fatalError("Could not encode confirmation data!")
+                                }
+                                self.multipeerSession?.sendToAllPeers(encodedConfirmationData, reliably: true)
+                            }
+                        })
+                        let cancelAction = UIAlertAction(title: "Delete", style: .default, handler: {
+                            action in
+                            currentPlugin.logger?.removeLastRow()
+                            currentPlugin.logger?.removeLastRow()
+                            currentPlugin.logger?.removeLastRow()
+                            currentPlugin.sequenceNumber -= 1
+                            let confirmationData = "Delete"
+                            if !(self.multipeerSession?.connectedPeers.isEmpty)!{
+                                guard let encodedConfirmationData = try? JSONEncoder().encode(confirmationData) else{
+                                    self.messageLabel.displayMessage("Could not encode confirmation data!")
+                                    fatalError("Could not encode confirmation data!")
+                                }
+                                self.multipeerSession?.sendToAllPeers(encodedConfirmationData, reliably: true)
+                            }
+                        })
+                        confirmationController.addAction(confirmAction)
+                        confirmationController.addAction(cancelAction)
+                        self.present(confirmationController, animated: true, completion: nil)
                     }
                 default:
                     return
@@ -1204,40 +1264,49 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
             }
             else if self.pluginManager.activePlugin is SpectatorSharedARPlugin{
                 let currentPlugin = self.pluginManager.activePlugin as? SpectatorSharedARPlugin
-                self.rayToggledOn = true
-                currentPlugin?.helpToggled = true
                 switch stringCommandData {
                 case "Base":
-                    self.toggleSharedARHelpLabel.isHidden = true
-                    self.toggleSharedARHelp.isHidden = true
                     DispatchQueue.main.async {
+                        self.toggleSharedARHelpLabel.isHidden = false
+                        self.toggleSharedARHelp.isHidden = false
+                        self.pipView.isHidden = true
+                        self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemGreen
+                        self.rayToggledOn = true
+                        currentPlugin?.helpToggled = true
                         currentPlugin?.currentMode = stringCommandData
                         currentPlugin?.setupScene(sceneNumber: self.currentScene)
-                        self.pipView.isHidden = true
                     }
                 case "Ray","Opacity":
-                    self.toggleSharedARHelpLabel.isHidden = false
-                    self.toggleSharedARHelp.isHidden = false
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async{
+                        self.toggleSharedARHelpLabel.isHidden = false
+                        self.toggleSharedARHelp.isHidden = false
+                        self.pipView.isHidden = true
+                        self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemGreen
+                        self.rayToggledOn = true
+                        currentPlugin?.helpToggled = true
                         currentPlugin?.currentMode = stringCommandData
                         currentPlugin?.setupScene(sceneNumber: self.currentScene)
-                        self.pipView.isHidden = true
                     }
                 case "Video":
                     DispatchQueue.main.async {
+                        self.toggleSharedARHelpLabel.isHidden = false
+                        self.toggleSharedARHelp.isHidden = false
+                        self.pipView.isHidden = false
+                        self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemGreen
+                        self.rayToggledOn = true
+                        currentPlugin?.helpToggled = true
                         currentPlugin?.currentMode = stringCommandData
                         currentPlugin?.setupScene(sceneNumber: self.currentScene)
-                        self.pipView.isHidden = false
                     }
                 case "Demo":
                     DispatchQueue.main.async{
                         self.currentScene = 0
                         currentPlugin?.setupScene(sceneNumber: 0)
                     }
-                case "1","2","3","4","5","6","7","8","9","10","11","12":
+                case "Scene1","Scene2","Scene3","Scene4","Scene5","Scene6","Scene7","Scene8","Scene9","Scene10","Scene11","Scene12":
                     DispatchQueue.main.async{
-                        self.currentScene = Int(stringCommandData)!
-                        currentPlugin?.setupScene(sceneNumber: Int(stringCommandData)!)
+                        self.currentScene = self.sceneDict[stringCommandData]!
+                        currentPlugin?.setupScene(sceneNumber: self.sceneDict[stringCommandData]!)
                     }
                 case "Opposite", "SideBySide", "NinetyDegree":
                     DispatchQueue.main.async {
@@ -1247,7 +1316,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 case "ChangeTask":
                     DispatchQueue.main.async {
                         currentPlugin?.relocationTask?.toggle()
-                        currentPlugin?.setupScene(sceneNumber: self.currentScene)
+                        currentPlugin?.highlightedNode = nil
                         self.pipView.isHidden = true
                         if currentPlugin?.relocationTask! == true {
                             self.toggleSharedARHelp.isHidden = true
@@ -1258,14 +1327,40 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                         }
                     }
                 case "Start":
-                    self.rayToggledOn = true
-                    currentPlugin?.helpToggled = true
                     DispatchQueue.main.async {
+                        self.rayToggledOn = true
+                        currentPlugin?.helpToggled = true
+                        self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemGreen
+                        if currentPlugin?.currentMode == "Video"{
+                            self.pipView.isHidden = false
+                        }
                         currentPlugin?.startDeviceUpdate()
                     }
                 case "Log":
                     DispatchQueue.main.async {
                         currentPlugin?.logCurrent()
+                    }
+                case "ResetCurrentNodeTime":
+                    DispatchQueue.main.async {
+                        currentPlugin?.resetTimeForCurrentNode()
+                    }
+                case "WriteOut":
+                    DispatchQueue.main.async {
+                        currentPlugin?.logger?.writeOut()
+                        currentPlugin?.relocationTaskLogger?.writeOut()
+                    }
+                case "Delete":
+                    DispatchQueue.main.async {
+                        if currentPlugin!.relocationTask!{
+                            currentPlugin?.relocationTaskLogger?.removeLastRow()
+                            currentPlugin?.relocationTaskLogger?.removeLastRow()
+                            currentPlugin?.relocationTaskLogger?.removeLastRow()
+                        }
+                        else if !currentPlugin!.relocationTask!{
+                            currentPlugin?.logger?.removeLastRow()
+                            currentPlugin?.logger?.removeLastRow()
+                            currentPlugin?.logger?.removeLastRow()
+                        }
                     }
                 default:
                     DispatchQueue.main.async {
@@ -1413,6 +1508,27 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 confirmAlertController.addAction(cancelAction)
                 self.present(confirmAlertController, animated: true,completion: nil)
             }
+        case .sequenceData:
+            let sequenceData = userInfo["sequenceData"] as? [String]
+            if !(multipeerSession?.connectedPeers.isEmpty)!{
+                guard let encodedSequenceData = try? JSONEncoder().encode(sequenceData) else{
+                    messageLabel.displayMessage("Could not encode sequence data!")
+                    fatalError("Could not encode sequence data!")
+                }
+                multipeerSession?.sendToAllPeers(encodedSequenceData, reliably: true)
+            }
+        case .trialLogConfirmation:
+            if pluginManager.activePlugin is SpectatorSharedARPlugin{
+                let confirmationString = userInfo["confirmData"] as? String
+                print(confirmationString)
+                if !(self.multipeerSession?.connectedPeers.isEmpty)!{
+                    guard let encodedConfirmationData = try? JSONEncoder().encode(confirmationString) else{
+                        self.messageLabel.displayMessage("Could not encode confirmation data!")
+                        fatalError("Could not encode confirmation data!")
+                    }
+                    self.multipeerSession?.sendToAllPeers(encodedConfirmationData, reliably: true)
+                }
+            }
         default:
             break
         }
@@ -1453,15 +1569,19 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                     else{
                         currentPlugin.startHelpTimer()
                     }
-                    self.pipView.isHidden.toggle()
+                    DispatchQueue.main.async {
+                        self.pipView.isHidden.toggle()
+                    }
                 default:
                     self.messageLabel.displayMessage("Unknown mode set.")
                 }
-                if currentPlugin.helpToggled{
-                    self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemGreen
-                }
-                else{
-                    self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemRed
+                DispatchQueue.main.async {
+                    if currentPlugin.helpToggled{
+                        self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemGreen
+                    }
+                    else{
+                        self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemRed
+                    }
                 }
             }
             else if currentPlugin.sceneNumber == 0 {
@@ -1471,21 +1591,22 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 case "Ray":
                     self.rayToggledOn.toggle()
                     currentPlugin.helpToggled.toggle()
-        
                 case "Opacity":
                     currentPlugin.helpToggled.toggle()
-
                 case "Video":
                     currentPlugin.helpToggled.toggle()
-
+                    self.pipView.isHidden.toggle()
                 default:
                     self.messageLabel.displayMessage("Unknown mode set.")
                 }
-                if currentPlugin.helpToggled{
-                    self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemGreen
-                }
-                else{
-                    self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemRed
+                print(currentPlugin.helpToggled)
+                DispatchQueue.main.async {
+                    if currentPlugin.helpToggled{
+                        self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemGreen
+                    }
+                    else{
+                        self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemRed
+                    }
                 }
             }
         }/*
@@ -1568,9 +1689,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
             
             let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
             currentPlugin?.currentMode = "Opacity"
-            currentPlugin?.setupScene(sceneNumber: currentScene)
+            currentPlugin?.setupScene(sceneNumber: self.currentScene)
+            
             let informationPackage : [String : Any] = ["modeChangeData": "Opacity"]
             NotificationCenter.default.post(name: .changeModeCommand, object: nil, userInfo: informationPackage)
+            
         }
     }
     
@@ -1644,7 +1767,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         currentPlugin?.setupScene(sceneNumber: 1)
         self.currentScene = 1
         
-        let informationPackage : [String : Any] = ["sceneChangeData" : "1"]
+        let informationPackage : [String : Any] = ["sceneChangeData" : "Scene1"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
     }
     
@@ -1653,7 +1776,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         currentPlugin?.setupScene(sceneNumber: 2)
         self.currentScene = 2
         
-        let informationPackage : [String : Any] = ["sceneChangeData" : "2"]
+        let informationPackage : [String : Any] = ["sceneChangeData" : "Scene2"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
     }
     
@@ -1662,7 +1785,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         currentPlugin?.setupScene(sceneNumber: 3)
         self.currentScene = 3
         
-        let informationPackage : [String : Any] = ["sceneChangeData" : "3"]
+        let informationPackage : [String : Any] = ["sceneChangeData" : "Scene3"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
     }
     
@@ -1671,7 +1794,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         currentPlugin?.setupScene(sceneNumber: 4)
         self.currentScene = 4
         
-        let informationPackage : [String : Any] = ["sceneChangeData" : "4"]
+        let informationPackage : [String : Any] = ["sceneChangeData" : "Scene4"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
     }
     
@@ -1681,7 +1804,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         currentPlugin?.setupScene(sceneNumber: 5)
         self.currentScene = 5
         
-        let informationPackage : [String : Any] = ["sceneChangeData" : "5"]
+        let informationPackage : [String : Any] = ["sceneChangeData" : "Scene5"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
     }
     
@@ -1690,7 +1813,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         currentPlugin?.setupScene(sceneNumber: 6)
         self.currentScene = 6
         
-        let informationPackage : [String : Any] = ["sceneChangeData" : "6"]
+        let informationPackage : [String : Any] = ["sceneChangeData" : "Scene6"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
     }
     
@@ -1699,7 +1822,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         currentPlugin?.setupScene(sceneNumber: 7)
         self.currentScene = 7
         
-        let informationPackage : [String : Any] = ["sceneChangeData" : "7"]
+        let informationPackage : [String : Any] = ["sceneChangeData" : "Scene7"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
     }
     
@@ -1708,7 +1831,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         currentPlugin?.setupScene(sceneNumber: 8)
         self.currentScene = 8
         
-        let informationPackage : [String : Any] = ["sceneChangeData" : "8"]
+        let informationPackage : [String : Any] = ["sceneChangeData" : "Scene8"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
     }
     
@@ -1717,7 +1840,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         currentPlugin?.setupScene(sceneNumber: 9)
         self.currentScene = 9
         
-        let informationPackage : [String : Any] = ["sceneChangeData" : "9"]
+        let informationPackage : [String : Any] = ["sceneChangeData" : "Scene9"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
     }
     
@@ -1726,7 +1849,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         currentPlugin?.setupScene(sceneNumber: 10)
         self.currentScene = 10
         
-        let informationPackage : [String : Any] = ["sceneChangeData" : "10"]
+        let informationPackage : [String : Any] = ["sceneChangeData" : "Scene10"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
     }
     
@@ -1735,7 +1858,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         currentPlugin?.setupScene(sceneNumber: 11)
         self.currentScene = 11
         
-        let informationPackage : [String : Any] = ["sceneChangeData" : "11"]
+        let informationPackage : [String : Any] = ["sceneChangeData" : "Scene11"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
     }
     
@@ -1744,7 +1867,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         currentPlugin?.setupScene(sceneNumber: 12)
         self.currentScene = 12
         
-        let informationPackage : [String : Any] = ["sceneChangeData" : "12"]
+        let informationPackage : [String : Any] = ["sceneChangeData" : "Scene12"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
     }
     
@@ -1781,6 +1904,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         let informationPackage : [String : Any] = ["taskChangeData" : "ChangeTask"]
         NotificationCenter.default.post(name: .changeTaskMode, object: nil, userInfo: informationPackage)
     }
+    
+    
     
     // MARK: - Share ARWorldMap with other users
    

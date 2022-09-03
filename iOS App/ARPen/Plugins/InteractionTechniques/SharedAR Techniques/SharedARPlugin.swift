@@ -45,6 +45,10 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     
     var sequenceData : [ID] = []
     
+    var currentSequence : [String] = []
+    
+    var layersAsTextures : [CALayer] = []
+    
     
     
     
@@ -62,9 +66,8 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         self.pluginDisabledImage = UIImage.init(named: "CubeByExtractionPluginDisabled")
         self.isExperimentalPlugin = true
         
-        DispatchQueue.main.async {
-            self.sequenceData = self.loadJson(filename: "sequenceData")!
-        }
+        self.initLayersTextures()
+        
     }
     
     
@@ -90,6 +93,23 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     
     }
     
+    func initLayersTextures(){
+        for i in 0...47{
+            let layer = CALayer()
+            layer.frame = CGRect(x: 0, y: 0, width: 150, height: 150)
+            layer.backgroundColor = UIColor.orange.cgColor
+            let textLayer = CATextLayer()
+            textLayer.frame = layer.bounds
+            textLayer.fontSize = layer.bounds.size.height - 20
+            textLayer.string = i.description
+            textLayer.alignmentMode = .center
+            textLayer.foregroundColor = UIColor.black.cgColor
+            textLayer.display()
+            layer.addSublayer(textLayer)
+            layersAsTextures.append(layer)
+        }
+    }
+    
 
     
     func setupScene(sceneNumber: Int){
@@ -110,7 +130,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             self.csvData = csvData
             self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
             self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
-            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+            self.logger?.header = "TimeForCurrentNode,SummedTimeForNodes,FullTaskTime,HighlightedNode"
         case 1:
             url = url.appendingPathComponent("Scene1").appendingPathExtension("csv")
             guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
@@ -120,8 +140,8 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             }
             self.csvData = csvData
             self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
-            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
-            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .noAutomaticWrite)
+            self.logger?.header = "TimeForCurrentNode,SummedTimeForNodes,FullTaskTime,HighlightedNode"
         case 2:
             url = url.appendingPathComponent("Scene2").appendingPathExtension("csv")
             guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
@@ -132,7 +152,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             self.csvData = csvData
             self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
             self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
-            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+            self.logger?.header = "TimeForCurrentNode,SummedTimeForNodes,FullTaskTime,HighlightedNode"
         case 3:
             url = url.appendingPathComponent("Scene3").appendingPathExtension("csv")
             guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
@@ -143,7 +163,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             self.csvData = csvData
             self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
             self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + "Scene" + currentMode! + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
-            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+            self.logger?.header = "TimeForCurrentNode,SummedTimeForNodes,FullTaskTime,HighlightedNode"
         case 4:
             url = url.appendingPathComponent("Scene4").appendingPathExtension("csv")
             guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
@@ -154,7 +174,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             self.csvData = csvData
             self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
             self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
-            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+            self.logger?.header = "TimeForCurrentNode,SummedTimeForNodes,FullTaskTime,HighlightedNode"
         case 5:
             url = url.appendingPathComponent("Scene5").appendingPathExtension("csv")
             guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
@@ -165,7 +185,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             self.csvData = csvData
             self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
             self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
-            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+            self.logger?.header = "TimeForCurrentNode,SummedTimeForNodes,FullTaskTime,HighlightedNode"
         case 6:
             url = url.appendingPathComponent("Scene6").appendingPathExtension("csv")
             guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
@@ -176,7 +196,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             self.csvData = csvData
             self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
             self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
-            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+            self.logger?.header = "TimeForCurrentNode,SummedTimeForNodes,FullTaskTime,HighlightedNode"
         case 7:
             url = url.appendingPathComponent("Scene7").appendingPathExtension("csv")
             guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
@@ -187,7 +207,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             self.csvData = csvData
             self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
             self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
-            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+            self.logger?.header = "TimeForCurrentNode,SummedTimeForNodes,FullTaskTime,HighlightedNode"
         case 8:
             url = url.appendingPathComponent("Scene8").appendingPathExtension("csv")
             guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
@@ -198,7 +218,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             self.csvData = csvData
             self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
             self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
-            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+            self.logger?.header = "TimeForCurrentNode,SummedTimeForNodes,FullTaskTime,HighlightedNode"
         case 9:
             url = url.appendingPathComponent("Scene9").appendingPathExtension("csv")
             guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
@@ -209,7 +229,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             self.csvData = csvData
             self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
             self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
-            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+            self.logger?.header = "TimeForCurrentNode,SummedTimeForNodes,FullTaskTime,HighlightedNode"
         case 10:
             url = url.appendingPathComponent("Scene10").appendingPathExtension("csv")
             guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
@@ -220,7 +240,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             self.csvData = csvData
             self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
             self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
-            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+            self.logger?.header = "TimeForCurrentNode,SummedTimeForNodes,FullTaskTime,HighlightedNode"
         case 11:
             url = url.appendingPathComponent("Scene11").appendingPathExtension("csv")
             guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
@@ -231,7 +251,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             self.csvData = csvData
             self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
             self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
-            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+            self.logger?.header = "TimeForCurrentNode,SummedTimeForNodes,FullTaskTime,HighlightedNode"
         case 12:
             url = url.appendingPathComponent("Scene12").appendingPathExtension("csv")
             guard let csvData = try? DataFrame(contentsOfCSVFile: url) else{
@@ -242,7 +262,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             self.csvData = csvData
             self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
             self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber), inDirectory: documentsDirectory, options: .lineNumbering)
-            self.logger?.header = "TimeSinceLast,SummedTimeSinceLast,FullTaskTime,HighlightedNode"
+            self.logger?.header = "TimeForCurrentNode,SummedTimeForNodes,FullTaskTime,HighlightedNode"
         default:
             let informationPackage: [String : Any] = ["labelStringData": "Specified scene was not found!"]
             NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
@@ -261,19 +281,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             arPenStudyNode = studyNodeClass.init(withPosition: SCNVector3(row[1] as! Double, row[2] as! Double - 0.2, row[3] as! Double), andDimension: Float(0.03))
             arPenStudyNode.inTrialState = true
             arPenStudyNode.name = String(row.index)
-            let layer = CALayer()
-            layer.frame = CGRect(x: 0, y: 0, width: 150, height: 150)
-            layer.backgroundColor = UIColor.orange.cgColor
-            let textLayer = CATextLayer()
-            textLayer.frame = layer.bounds
-            textLayer.fontSize = layer.bounds.size.height - 20.0
-            textLayer.string = "\(row[0]!)"
-            textLayer.alignmentMode = .center
-            textLayer.foregroundColor = UIColor.black
-                .cgColor
-            textLayer.display()
-            layer.addSublayer(textLayer)
-            arPenStudyNode.geometry?.firstMaterial?.diffuse.contents = layer
+            arPenStudyNode.geometry?.firstMaterial?.diffuse.contents = layersAsTextures[row.index]
             studyNodes.append(arPenStudyNode)
         }
         
@@ -281,42 +289,36 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         return (superNode,studyNodes)
         
     }
-    
-    
-    func onPenClickStarted(at position: SCNVector3, startedButton: Button) {
-        if !self.relocationTask! && !self.timerIsRunning {
-            if self.highlightedNode?.name == self.sequenceData[Int(self.userID)! - 1].scene[self.sceneNumber-1].sequence[self.sequenceNumber].node[self.objectNumber].index.description{
-                self.timerIsRunning = true
-            
-                if !self.timer.isValid{
-                    self.timer = Timer.scheduledTimer(timeInterval: (1.0/30.0), target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
-                }
-                    
-                self.timeSinceLast = 0.0
 
+    func onPenClickEnded(at position: SCNVector3, releasedButton: Button) {
+        if !self.relocationTask! && !self.timerIsRunning && self.highlightedNode != nil {
+            self.timerIsRunning = true
+            self.timeSinceLast = 0.0
+            
+            if !self.timer.isValid{
+                self.timer = Timer.scheduledTimer(timeInterval: (1.0/30.0), target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
+            }
                     
-                //Set Label so I can see its currently running
-                let informationPackage : [String : Any] = ["sharedARInfoLabelData": String(currentMode!.prefix(1) + userPosition.prefix(1) + "+")]
-                NotificationCenter.default.post(name: .infoLabelCommand, object: nil, userInfo: informationPackage)
+            //Set Label so I can see its currently running
+            let informationPackage : [String : Any] = ["sharedARInfoLabelData": String(currentMode!.prefix(1) + userPosition.prefix(1) + "+")]
+            NotificationCenter.default.post(name: .infoLabelCommand, object: nil, userInfo: informationPackage)
                 
-                //Start Logging for current object on other device
-                if objectNumber == 0{
-                    let startMeasurementInformationPackage : [String : Any] = ["measurementCommandData" : "Start"]
-                    NotificationCenter.default.post(name: .measurementCommand, object: nil, userInfo: startMeasurementInformationPackage)
-                }
+            //Start Logging for current object on other device
+            if objectNumber == 0{
+                let startMeasurementInformationPackage : [String : Any] = ["measurementCommandData" : "Start"]
+                NotificationCenter.default.post(name: .measurementCommand, object: nil, userInfo: startMeasurementInformationPackage)
             }
-            else{
-                let informationPackageWrongNode : [String : Any] = ["labelStringData" : "Wrong node by presenter."]
-                NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackageWrongNode)
-            }
+            currentSequence.append(self.highlightedNode!.name!)
+            
+            let resetTimeForCurrentNodeInformationPackage : [String : Any] = ["measurementCommandData" : "ResetCurrentNodeTime"]
+            NotificationCenter.default.post(name: .measurementCommand, object: nil, userInfo: resetTimeForCurrentNodeInformationPackage)
         }
         else if !self.relocationTask! && self.timerIsRunning {
-            if self.highlightedNode?.name == self.sequenceData[0].scene[self.sceneNumber-1].sequence[self.sequenceNumber].node[self.objectNumber].index.description{
                 self.timerIsRunning = false
                 
                 self.summedTimeSinceLast += self.timeSinceLast
                     
-                self.logger?.logObjects(in: [self.timeSinceLast,self.summedTimeSinceLast,self.overallTime,self.highlightedNode!.name!])
+                self.logger?.logObjects(in: [self.timeSinceLast,self.summedTimeSinceLast,self.overallTime,currentSequence.last!])
                     
                 //Set Label to no Text, so i know its stopped currently
                 let informationPackage : [String : Any] = ["sharedARInfoLabelData": " "]
@@ -334,18 +336,25 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
                     self.timeSinceLast = 0.0
                     self.overallTime = 0.0
                     self.summedTimeSinceLast = 0.0
-                    if self.sequenceNumber == 5{
-                        self.sequenceNumber = 0
+                    
+                    let sequenceInformationPackage : [String : Any] = ["sequenceData" : self.currentSequence]
+                    NotificationCenter.default.post(name: .sequenceData, object: nil, userInfo: sequenceInformationPackage)
+                    
+                    self.currentSequence.removeAll()
+                    
+                    if self.sequenceNumber < 5{
                         let informationPackageDoneMeassuring: [String : Any] = ["labelStringData": "Data Point done, switch task!"]
                         NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackageDoneMeassuring)
                     }
+                    else{
+                        let informationPackageDoneMeassuring: [String : Any] = ["labelStringData": "One last relocation, then next setting!"]
+                        NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackageDoneMeassuring)
                 }
             }
-            else{
-                let informationPackageWrongNode : [String : Any] = ["labelStringData" : "Presenter left correct node."]
-                NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackageWrongNode)
-            }
         }
+    }
+    
+    func onPenClickStarted(at position: SCNVector3, startedButton: Button) {
     }
     
     @objc func updateTimer(){
@@ -384,95 +393,97 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     }
     
     func onIdleMovement(to position: SCNVector3) {
-        if self.pluginManager != nil && !self.relocationTask!{
-            let pluginManager = self.pluginManager!
-            let projectedPencilPoint = pluginManager.sceneView.projectPoint(pluginManager.penScene.pencilPoint.position)
-            let projectedCGPoint = CGPoint(x: CGFloat(projectedPencilPoint.x), y: CGFloat(projectedPencilPoint.y))
-            let hitResults = pluginManager.sceneView.hitTest(projectedCGPoint, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
-            if hitResults.contains(where: {$0.node is ARPenStudyNode}){
-                self.highlightedNode = hitResults.filter({$0.node is ARPenStudyNode}).first?.node as? ARPenStudyNode
-                
-                switch self.currentMode{
-                case "Base":
-                    let informationPackage : [String : Any] = ["nodeHighlightData" : self.highlightedNode?.name!]
-                    NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
-                case "Ray":
-                    let cameraNode = pluginManager.sceneView.pointOfView
-                    let renderedRay = SCNNode()
-                    let firstHitResult = hitResults.filter({$0.node is ARPenStudyNode}).first
-                    renderedRay.name = "renderedRay"
-                    renderedRay.buildLineInTwoPointsWithRotation(from: cameraNode!.worldPosition, to: firstHitResult!.worldCoordinates, radius: 0.003, color: .red)
+        DispatchQueue.main.async {
+            if self.pluginManager != nil && !self.relocationTask!{
+                let pluginManager = self.pluginManager!
+                let projectedPencilPoint = pluginManager.sceneView.projectPoint(pluginManager.penScene.pencilPoint.position)
+                let projectedCGPoint = CGPoint(x: CGFloat(projectedPencilPoint.x), y: CGFloat(projectedPencilPoint.y))
+                let hitResults = pluginManager.sceneView.hitTest(projectedCGPoint, options: [SCNHitTestOption.searchMode: SCNHitTestSearchMode.all.rawValue])
+                if hitResults.contains(where: {$0.node is ARPenStudyNode}){
+                    self.highlightedNode = hitResults.filter({$0.node is ARPenStudyNode}).first?.node as? ARPenStudyNode
                     
-                    let informationPackageRay: [String : Any] = ["nodeData" : renderedRay]
-                    NotificationCenter.default.post(name: .shareSCNNodeData, object: nil, userInfo: informationPackageRay)
-                    
-                    let informationPackageHighlight : [String : Any] = ["nodeHighlightData" : self.highlightedNode?.name!]
-                    NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackageHighlight)
-                    
-                case "Video":
-                    let informationPackage : [String : Any] = ["nodeHighlightData" : self.highlightedNode?.name!]
-                    NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
-                    
-                case "Opacity":
-                    let informationPackage : [String : Any] = ["nodeHighlightData" : self.highlightedNode?.name!]
-                    NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
+                    switch self.currentMode{
+                    case "Base":
+                        let informationPackage : [String : Any] = ["nodeHighlightData" : self.highlightedNode?.name!]
+                        NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
+                    case "Ray":
+                        let cameraNode = pluginManager.sceneView.pointOfView
+                        let renderedRay = SCNNode()
+                        let firstHitResult = hitResults.filter({$0.node is ARPenStudyNode}).first
+                        renderedRay.name = "renderedRay"
+                        renderedRay.buildLineInTwoPointsWithRotation(from: cameraNode!.worldPosition, to: firstHitResult!.worldCoordinates, radius: 0.003, color: .red)
+                        
+                        let informationPackageRay: [String : Any] = ["nodeData" : renderedRay]
+                        NotificationCenter.default.post(name: .shareSCNNodeData, object: nil, userInfo: informationPackageRay)
+                        
+                        let informationPackageHighlight : [String : Any] = ["nodeHighlightData" : self.highlightedNode?.name!]
+                        NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackageHighlight)
+                        
+                    case "Video":
+                        let informationPackage : [String : Any] = ["nodeHighlightData" : self.highlightedNode?.name!]
+                        NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
+                        
+                    case "Opacity":
+                        let informationPackage : [String : Any] = ["nodeHighlightData" : self.highlightedNode?.name!]
+                        NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
 
-                    for node in pluginManager.penScene.drawingNode.childNodes{
-                        if node.name != self.highlightedNode!.name{
+                        for node in pluginManager.penScene.drawingNode.childNodes{
+                            if node.name != self.highlightedNode!.name{
+                                node.opacity = 0.5
+                            }
+                            else{
+                                node.opacity = 1.0
+                            }
+                        }
+                    default:
+                        let informationPackage: [String : Any] = ["labelStringData" : "Unknown Mode Set!"]
+                        NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
+                    }
+                }
+                else{
+                    self.highlightedNode = nil
+                    switch self.currentMode{
+                    case "Base":
+                        let informationPackage : [String : Any] = ["nodeHighlightData" : "Nil"]
+                        NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
+                    case "Ray":
+                        let cameraNode = pluginManager.sceneView.pointOfView
+                        let unprojectedPointVector = SCNVector3(projectedCGPoint.x, projectedCGPoint.y, 1)
+                        let unprojectedFarPlanePoint = pluginManager.sceneView.unprojectPoint(unprojectedPointVector)
+                        let renderedRay = SCNNode()
+                        renderedRay.name = "renderedRay"
+                        renderedRay.buildLineInTwoPointsWithRotation(from: cameraNode!.worldPosition, to: unprojectedFarPlanePoint, radius: 0.003, color: .red)
+                        
+                        let informationPackageHighlight : [String : Any] = ["nodeHighlightData" : "Nil"]
+                        NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackageHighlight)
+                        
+                        let informationPackageRay : [String : Any] = ["nodeData" : renderedRay]
+                        NotificationCenter.default.post(name: .shareSCNNodeData, object: nil, userInfo: informationPackageRay)
+                    case "Video":
+                        let informationPackage : [String : Any] = ["nodeHighlightData" : "Nil"]
+                        NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
+                    case "Opacity":
+                        let informationPackage : [String : Any] = ["nodeHighlightData" : "Nil"]
+                        NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
+                        
+                        for node in pluginManager.penScene.drawingNode.childNodes{
                             node.opacity = 0.5
                         }
-                        else{
-                            node.opacity = 1.0
-                        }
+                        
+                    default:
+                        let informationPackage: [String : Any] = ["labelStringData" : "Unknown Mode Set!"]
+                        NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
                     }
-                default:
-                    let informationPackage: [String : Any] = ["labelStringData" : "Unknown Mode Set!"]
-                    NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
                 }
+                
             }
             else{
                 self.highlightedNode = nil
-                switch self.currentMode{
-                case "Base":
+                
+                if !self.relocationTask!{
                     let informationPackage : [String : Any] = ["nodeHighlightData" : "Nil"]
                     NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
-                case "Ray":
-                    let cameraNode = pluginManager.sceneView.pointOfView
-                    let unprojectedPointVector = SCNVector3(projectedCGPoint.x, projectedCGPoint.y, 1)
-                    let unprojectedFarPlanePoint = pluginManager.sceneView.unprojectPoint(unprojectedPointVector)
-                    let renderedRay = SCNNode()
-                    renderedRay.name = "renderedRay"
-                    renderedRay.buildLineInTwoPointsWithRotation(from: cameraNode!.worldPosition, to: unprojectedFarPlanePoint, radius: 0.003, color: .red)
-                    
-                    let informationPackageHighlight : [String : Any] = ["nodeHighlightData" : "Nil"]
-                    NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackageHighlight)
-                    
-                    let informationPackageRay : [String : Any] = ["nodeData" : renderedRay]
-                    NotificationCenter.default.post(name: .shareSCNNodeData, object: nil, userInfo: informationPackageRay)
-                case "Video":
-                    let informationPackage : [String : Any] = ["nodeHighlightData" : "Nil"]
-                    NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
-                case "Opacity":
-                    let informationPackage : [String : Any] = ["nodeHighlightData" : "Nil"]
-                    NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
-                    
-                    for node in pluginManager.penScene.drawingNode.childNodes{
-                        node.opacity = 0.5
-                    }
-                    
-                default:
-                    let informationPackage: [String : Any] = ["labelStringData" : "Unknown Mode Set!"]
-                    NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
                 }
-            }
-            
-        }
-        else{
-            self.highlightedNode = nil
-            
-            if !self.relocationTask!{
-                let informationPackage : [String : Any] = ["nodeHighlightData" : "Nil"]
-                NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
             }
         }
     }

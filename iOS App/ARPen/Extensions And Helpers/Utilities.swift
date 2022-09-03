@@ -74,6 +74,8 @@ extension Notification.Name {
     static let infoLabelCommand = Notification.Name("infoLabelCommand")
     static let measurementCommand = Notification.Name("measurementCommand")
     static let alertCommand = Notification.Name("alertCommand")
+    static let sequenceData = Notification.Name("sequenceData")
+    static let trialLogConfirmation = Notification.Name("trialLogConfirmation")
 }
 
 @available(iOS 12.0, *)

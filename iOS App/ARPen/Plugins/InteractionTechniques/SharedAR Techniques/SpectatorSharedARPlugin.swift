@@ -28,6 +28,7 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     let fileManager = FileManager.default
     
     var logger : CSVLogFile?
+    var relocationTaskLogger : CSVLogFile?
     
     let userID = "0"
     
@@ -40,11 +41,13 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     
     
     var objectNumber = 0
-    var sequenceNumber = 0
     
     var sceneNumber = 0
     var helpTimer = Timer()
     var helpToggled = true
+    var currentSequence : [String] = []
+    
+    var layersAsTextures : [CALayer] = []
 
     
     var highlightedNode : ARPenStudyNode? = nil{
@@ -59,6 +62,7 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         self.relocationTask = false
         self.currentMode = "Base"
         self.logger = CSVLogFile()
+        self.relocationTaskLogger = CSVLogFile()
         
         
         super.init()
@@ -69,6 +73,8 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         self.needsBluetoothARPen = false
         self.pluginDisabledImage = UIImage.init(named: "CubeByExtractionPluginDisabled")
         self.isExperimentalPlugin = true
+        
+        self.initLayersAsTextures()
     }
     
     override func activatePlugin(withScene scene: PenScene, andView view: ARSCNView, urManager: UndoRedoManager) {
@@ -102,10 +108,27 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         super.deactivatePlugin()
     }
     
+    func initLayersAsTextures(){
+        for i in 0...47{
+            let layer = CALayer()
+            layer.frame = CGRect(x: 0, y: 0, width: 150, height: 150)
+            layer.backgroundColor = UIColor.orange.cgColor
+            let textLayer = CATextLayer()
+            textLayer.frame = layer.bounds
+            textLayer.fontSize = layer.bounds.size.height - 20
+            textLayer.string = i.description
+            textLayer.alignmentMode = .center
+            textLayer.foregroundColor = UIColor.black.cgColor
+            textLayer.display()
+            layer.addSublayer(textLayer)
+            layersAsTextures.append(layer)
+        }
+    }
+    
     
     func setupScene(sceneNumber: Int){
         self.resetScene()
-        self.highlightedNode = nil
+        self.sceneNumber = sceneNumber
         
         
         var url = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
@@ -232,7 +255,6 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             let informationPackage: [String : Any] = ["labelStringData": "Specified scene was not found!"]
             NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
         }
-        self.sceneNumber = sceneNumber
     }
     
     
@@ -246,19 +268,7 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             arPenStudyNode = studyNodeClass.init(withPosition: SCNVector3(row[1] as! Double, row[2] as! Double - 0.2, row[3] as! Double), andDimension: Float(0.03))
             arPenStudyNode.inTrialState = true
             arPenStudyNode.name = String(row.index)
-            let layer = CALayer()
-            layer.frame = CGRect(x: 0, y: 0, width: 150, height: 150)
-            layer.backgroundColor = UIColor.orange.cgColor
-            let textLayer = CATextLayer()
-            textLayer.frame = layer.bounds
-            textLayer.fontSize = layer.bounds.size.height - 20.0
-            textLayer.string = "\(row[0]!)"
-            textLayer.alignmentMode = .center
-            textLayer.foregroundColor = UIColor.black
-                .cgColor
-            textLayer.display()
-            layer.addSublayer(textLayer)
-            arPenStudyNode.geometry?.firstMaterial?.diffuse.contents = layer
+            arPenStudyNode.geometry?.firstMaterial?.diffuse.contents = self.layersAsTextures[row.index]
             studyNodes.append(arPenStudyNode)
         }
         
@@ -280,7 +290,6 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             node.removeFromParentNode()
         }
         
-        self.sequenceNumber = 0
         self.objectNumber = 0
 
         self.stopDeviceUpdate()
@@ -288,7 +297,6 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         //reset recorded actions of undo redo manager
         self.pluginManager?.undoRedoManager.resetUndoRedoManager()
     }
-    
     
     
     @objc func handleTap(_ sender: UITapGestureRecognizer){
@@ -312,21 +320,28 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     }
     
     func onIdleMovement(to position: SCNVector3) {
-        if currentMode == "Opacity" && !self.relocationTask! && self.helpToggled{
-            if highlightedNode != nil{
-                for node in pluginManager!.penScene.drawingNode.childNodes{
-                    if node.name != highlightedNode!.name && node.name != "renderedRay"{
-                        node.opacity = 0.5
+        DispatchQueue.main.async {
+            if self.currentMode == "Opacity" && !self.relocationTask! && self.helpToggled{
+                if self.highlightedNode != nil{
+                    for node in self.pluginManager!.penScene.drawingNode.childNodes{
+                        if node.name != self.highlightedNode!.name{
+                            node.opacity = 0.5
+                        }
+                        else{
+                            node.opacity = 1.0
+                        }
                     }
-                    else{
-                        node.opacity = 1.0
+                }
+                else{
+                    for node in self.pluginManager!.penScene.drawingNode.childNodes{
+                        node.opacity = 0.5
                     }
                 }
             }
-        }
-        else if currentMode == "Opacity" && !self.relocationTask! && !self.helpToggled{
-            for node in pluginManager!.penScene.drawingNode.childNodes{
-                node.opacity = 1.0
+            else if self.currentMode == "Opacity" && !self.relocationTask! && !self.helpToggled{
+                for node in self.pluginManager!.penScene.drawingNode.childNodes{
+                    node.opacity = 1.0
+                }
             }
         }
     }
@@ -380,27 +395,42 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     func startDeviceUpdate(){
         print("Meassurement started")
         currentMeasurement = DataPoint()
-        self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber) + String(relocationTask!), inDirectory: documentsDirectory, options: .lineNumbering)
-        self.logger?.header = "HighlightedNode,TranslationInX,TranslationInY,TranslationInZ,TranslationInXAbsolute,TranslationInYAbsolute,TranslationInZAbsolute,SummedTranslationInXAbsolute,SummedTranslationInYAbsolute,SummedTranslationInZAbsolute,RotationAroundX,RotationAroundY,RotationAroundZ,RotationAroundXAbsolute,RotationAroundYAbsolute,RotationAroundZAbsolute,SummedRotationAroundXAbsolute,SummedRotationAroundYAbsolute,SummedRotationAroundZAbsolute,WrongNode,Success,HelpButtonPresses,TotalHelpButtonPressesForSequence,TimeForNode,SummedTimeForNodes,FullTaskTime,HelpActiveTime,HelpActive"
+        if self.relocationTask!{
+            self.relocationTaskLogger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber) + "Relocation" , inDirectory: documentsDirectory, options: .noAutomaticWrite)
+            self.relocationTaskLogger?.header = "HighlightedNode,TranslationInX,TranslationInY,TranslationInZ,TranslationInXAbsolute,TranslationInYAbsolute,TranslationInZAbsolute,SummedTranslationInXAbsolute,SummedTranslationInYAbsolute,SummedTranslationInZAbsolute,RotationAroundX,RotationAroundY,RotationAroundZ,RotationAroundXAbsolute,RotationAroundYAbsolute,RotationAroundZAbsolute,SummedRotationAroundXAbsolute,SummedRotationAroundYAbsolute,SummedRotationAroundZAbsolute,WrongNode,Success,HelpButtonPresses,TotalHelpButtonPressesForSequence,TimeForNode,SummedTimeForNodes,FullTaskTime,HelpActiveTime,HelpActive"
+        }
+        else if !self.relocationTask!{
+            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber) + "Recognition", inDirectory: documentsDirectory, options: .noAutomaticWrite)
+            self.logger?.header = "HighlightedNode,TranslationInX,TranslationInY,TranslationInZ,TranslationInXAbsolute,TranslationInYAbsolute,TranslationInZAbsolute,SummedTranslationInXAbsolute,SummedTranslationInYAbsolute,SummedTranslationInZAbsolute,RotationAroundX,RotationAroundY,RotationAroundZ,RotationAroundXAbsolute,RotationAroundYAbsolute,RotationAroundZAbsolute,SummedRotationAroundXAbsolute,SummedRotationAroundYAbsolute,SummedRotationAroundZAbsolute,WrongNode,Success,HelpButtonPresses,TotalHelpButtonPressesForSequence,TimeForNode,SummedTimeForNodes,FullTaskTime,HelpActiveTime,HelpActive"
+        }
+        
         self.motionManager.startDeviceMotionUpdates(using: .xArbitraryCorrectedZVertical)
         self.timerForMovementUpdate = Timer.scheduledTimer(withTimeInterval: (1.0/30.0), repeats: true, block: {_ in self.updateMovement()})
-        self.timerForTaskTime = Timer.scheduledTimer(withTimeInterval: (1.0/30.0), repeats: true, block: {_ in self.updateTime()})
+        self.timerForTaskTime = Timer.scheduledTimer(withTimeInterval: (1.0/30.0), repeats: true, block: {_ in self.updateTaskTimes()})
         self.startHelpTimer()
     }
     
     func startHelpTimer(){
-        self.helpTimer = Timer.scheduledTimer(withTimeInterval: (1.0/30.0), repeats: true, block: {_ in self.updateTime()})
+        self.helpTimer = Timer.scheduledTimer(withTimeInterval: (1.0/30.0), repeats: true, block: {_ in self.updateHelpTime()})
     }
     
     func stopHelpTimer(){
         self.helpTimer.invalidate()
     }
     
-    func updateTime(){
-        currentMeasurement!.overallTime += (1.0/30.0)
-        currentMeasurement!.timeForCurrentNode += (1.0/30.0)
+    func updateHelpTime(){
         currentMeasurement!.activeHelpTime += (1.0/30.0)
     }
+    
+    func updateTaskTimes(){
+        currentMeasurement!.overallTime += (1.0/30.0)
+        currentMeasurement!.timeForCurrentNode += (1.0/30.0)
+    }
+    
+    func resetTimeForCurrentNode(){
+        currentMeasurement!.timeForCurrentNode = 0
+    }
+    
     
     func logCurrent(){
         currentMeasurement!.summedTranslationInXAbsolute += currentMeasurement!.translationInXAbsolute
@@ -412,8 +442,16 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         currentMeasurement!.totalButtonPressesInSequence += currentMeasurement!.buttonPressesForCurrentNode
         currentMeasurement!.summedTimeForNodes += currentMeasurement!.timeForCurrentNode
         
-        
-        self.logger?.logObjects(in: [self.highlightedNode!.name!,currentMeasurement!.translationInX,currentMeasurement!.translationInY,currentMeasurement!.translationInZ,currentMeasurement!.translationInXAbsolute,currentMeasurement!.translationInYAbsolute,currentMeasurement!.translationInZAbsolute,currentMeasurement!.summedTranslationInXAbsolute,currentMeasurement!.summedTranslationInYAbsolute,currentMeasurement!.summedTranslationInZAbsolute,currentMeasurement!.rotationAroundX,currentMeasurement!.rotationAroundY,currentMeasurement!.rotationAroundZ,currentMeasurement!.rotationAroundXAbsolute,currentMeasurement!.rotationAroundYAbsolute,currentMeasurement!.rotationAroundZAbsolute,currentMeasurement!.summedRotationAroundXAbsolute,currentMeasurement!.summedRotationAroundYAbsolute,currentMeasurement!.summedRotationAroundZAbsolute,currentMeasurement!.wrongNode,currentMeasurement!.success,currentMeasurement!.buttonPressesForCurrentNode,currentMeasurement!.totalButtonPressesInSequence,currentMeasurement!.timeForCurrentNode,currentMeasurement!.summedTimeForNodes,currentMeasurement!.overallTime,currentMeasurement!.activeHelpTime,self.helpToggled])
+        if self.relocationTask!{
+            if self.currentSequence[self.objectNumber] != self.highlightedNode!.name!{
+                print("Wrong node")
+                currentMeasurement!.wrongNode += 1
+            }
+            self.relocationTaskLogger?.logObjects(in: [self.highlightedNode!.name!,currentMeasurement!.translationInX,currentMeasurement!.translationInY,currentMeasurement!.translationInZ,currentMeasurement!.translationInXAbsolute,currentMeasurement!.translationInYAbsolute,currentMeasurement!.translationInZAbsolute,currentMeasurement!.summedTranslationInXAbsolute,currentMeasurement!.summedTranslationInYAbsolute,currentMeasurement!.summedTranslationInZAbsolute,currentMeasurement!.rotationAroundX,currentMeasurement!.rotationAroundY,currentMeasurement!.rotationAroundZ,currentMeasurement!.rotationAroundXAbsolute,currentMeasurement!.rotationAroundYAbsolute,currentMeasurement!.rotationAroundZAbsolute,currentMeasurement!.summedRotationAroundXAbsolute,currentMeasurement!.summedRotationAroundYAbsolute,currentMeasurement!.summedRotationAroundZAbsolute,currentMeasurement!.wrongNode,currentMeasurement!.success,currentMeasurement!.buttonPressesForCurrentNode,currentMeasurement!.totalButtonPressesInSequence,currentMeasurement!.timeForCurrentNode,currentMeasurement!.summedTimeForNodes,currentMeasurement!.overallTime,currentMeasurement!.activeHelpTime,self.helpToggled])
+        }
+        else if !self.relocationTask!{
+            self.logger?.logObjects(in: [self.highlightedNode!.name!,currentMeasurement!.translationInX,currentMeasurement!.translationInY,currentMeasurement!.translationInZ,currentMeasurement!.translationInXAbsolute,currentMeasurement!.translationInYAbsolute,currentMeasurement!.translationInZAbsolute,currentMeasurement!.summedTranslationInXAbsolute,currentMeasurement!.summedTranslationInYAbsolute,currentMeasurement!.summedTranslationInZAbsolute,currentMeasurement!.rotationAroundX,currentMeasurement!.rotationAroundY,currentMeasurement!.rotationAroundZ,currentMeasurement!.rotationAroundXAbsolute,currentMeasurement!.rotationAroundYAbsolute,currentMeasurement!.rotationAroundZAbsolute,currentMeasurement!.summedRotationAroundXAbsolute,currentMeasurement!.summedRotationAroundYAbsolute,currentMeasurement!.summedRotationAroundZAbsolute,currentMeasurement!.wrongNode,currentMeasurement!.success,currentMeasurement!.buttonPressesForCurrentNode,currentMeasurement!.totalButtonPressesInSequence,currentMeasurement!.timeForCurrentNode,currentMeasurement!.summedTimeForNodes,currentMeasurement!.overallTime,currentMeasurement!.activeHelpTime,self.helpToggled])
+        }
         
         currentMeasurement!.translationInX = 0
         currentMeasurement!.translationInY = 0
@@ -433,17 +471,15 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         
         self.objectNumber += 1
         if self.objectNumber == 3 {
-            self.sequenceNumber += 1
             self.stopDeviceUpdate()
             if self.relocationTask! {
                 self.relocationTask?.toggle()
                 let informationPackage : [String: Any] = ["taskChangeData": "ChangeTask"]
                 NotificationCenter.default.post(name: .changeTaskMode, object: nil, userInfo: informationPackage)
-                let labelInformationPackage : [String : Any] = ["labelStringData" : "Inform presenter that you are done."]
+                let labelInformationPackage : [String : Any] = ["labelStringData" : "Sequence done."]
                 NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: labelInformationPackage)
-            }
-            if self.sequenceNumber == 5{
-                self.sequenceNumber = 0
+                let setConfirmationAlertOnPresenterInformationPackage : [String : Any] = ["confirmData" : "Confirm sequence?"]
+                NotificationCenter.default.post(name: .trialLogConfirmation, object: nil, userInfo: setConfirmationAlertOnPresenterInformationPackage)
             }
             print("Measurement stopped!")
             return
