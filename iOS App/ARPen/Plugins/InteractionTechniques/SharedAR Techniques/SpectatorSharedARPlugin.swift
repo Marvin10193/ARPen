@@ -48,6 +48,8 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     var currentSequence : [String] = []
     
     var layersAsTextures : [CALayer] = []
+    
+    var sequenceNumber = 0
 
     
     var highlightedNode : ARPenStudyNode? = nil{
@@ -290,9 +292,11 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             node.removeFromParentNode()
         }
         
-        self.objectNumber = 0
-
         self.stopDeviceUpdate()
+        
+        self.objectNumber = 0
+        self.sequenceNumber = 0
+
         
         //reset recorded actions of undo redo manager
         self.pluginManager?.undoRedoManager.resetUndoRedoManager()
@@ -338,7 +342,7 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
                     }
                 }
             }
-            else if self.currentMode == "Opacity" && !self.relocationTask! && !self.helpToggled{
+            else if (self.currentMode == "Opacity" && !self.relocationTask! && !self.helpToggled) || self.relocationTask!{
                 for node in self.pluginManager!.penScene.drawingNode.childNodes{
                     node.opacity = 1.0
                 }
@@ -396,12 +400,12 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         print("Meassurement started")
         currentMeasurement = DataPoint()
         if self.relocationTask!{
-            self.relocationTaskLogger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber) + "Relocation" , inDirectory: documentsDirectory, options: .noAutomaticWrite)
-            self.relocationTaskLogger?.header = "HighlightedNode,TranslationInX,TranslationInY,TranslationInZ,TranslationInXAbsolute,TranslationInYAbsolute,TranslationInZAbsolute,SummedTranslationInXAbsolute,SummedTranslationInYAbsolute,SummedTranslationInZAbsolute,RotationAroundX,RotationAroundY,RotationAroundZ,RotationAroundXAbsolute,RotationAroundYAbsolute,RotationAroundZAbsolute,SummedRotationAroundXAbsolute,SummedRotationAroundYAbsolute,SummedRotationAroundZAbsolute,WrongNode,Success,HelpButtonPresses,TotalHelpButtonPressesForSequence,TimeForNode,SummedTimeForNodes,FullTaskTime,HelpActiveTime,HelpActive"
+            self.relocationTaskLogger = CSVLogFile(name: "SharedAR_ID " + userID + "_Relocation" , inDirectory: documentsDirectory, options: .noAutomaticWrite)
+            self.relocationTaskLogger?.header = "Trial,Mode,UserPosition,Scene,HighlightedNodes,SummedTrialTime,OverallTime,HelpCurrentlyActive,SummedHelpTime,HelpButtonPresses,SummedTranslationInX,SummedTranslationInY,SummedTranslationInZ,SummedTranslationInXAbsolute,SummedTranslationInYAbsolute,SummedTranslationInZAbsolute,SummedRotationAroundX,SummedRotationAroundY,SummedRotationAroundZ,SummedRotationAroundXAbsolute,SummedRotationAroundYAbsolute,SummedRotationAroundZAbsolute,#WrongNodes,Success,CUT!!,TimeForNode1,TimeForNode2,TimeForNode3,SummedTimeForNode1+2,HelpTimeForNode1,HelpTimeForNode2,HelpTimeForNode3,SummedHelpTimeForNode1+2,TranslationInXNode1,TranslationInYNode1,TranslationInZNode1,TranslationInXNode2,TranslationInYNode2,TranslationInZNode2,TranslationInXNode3,TranslationInYNode3,TranslationInZNode3,SummedTranslationInXNode1+2,SummedTranslationInYNode1+2,SummedTranslationInZNode1+2,TranslationInXAbsoluteNode1,TranslationInYAbsoluteNode1,TranslationInZAbsoluteNode1,TranslationInXAbsoluteNode2,TranslationInYAbsoluteNode2,TranslationInZAbsoluteNode2,TranslationInXAbsoluteNode3,TranslationInYAbsoluteNode3,TranslationInZAbsoluteNode3,SummedTranslationInXAbsoluteNode1+2,SummedTranslationInYAbsoluteNode1+2,SummedTranslationInZAbsoluteNode1+2,RotationAroundXNode1,RotationAroundYNode1,RotationAroundZNode1,RotationAroundXNode2,RotationAroundYNode2,RotationAroundZNode2,RotationAroundXNode3,RotationAroundYNode3,RotationAroundZNode3,SummedRotationAroundXNode1+2,SummedRotationAroundYNode1+2,SummedRotationAroundZNode1+2,RotationAroundXAbsoluteNode1,RotationAroundYAbsoluteNode1,RotationAroundZAbsoluteNode1,RotationAroundXAbsoluteNode2,RotationAroundYAbsoluteNode2,RotationAroundZAbsoluteNode2,RotationAroundXAbsoluteNode3,RotationAroundYAbsoluteNode3,RotationAroundZAbsoluteNode3,SummedRotationAroundXAbsoluteNode1+2,SummedRotationAroundYAbsoluteNode1+2,SummedRotationAroundZAbsoluteNode1+2,HelpButtonPressesNode1,HelpButtonPressesNode2,HelpButtonPressesNode3"
         }
         else if !self.relocationTask!{
-            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + userPosition + currentMode! + "Scene" + String(sceneNumber) + "Recognition", inDirectory: documentsDirectory, options: .noAutomaticWrite)
-            self.logger?.header = "HighlightedNode,TranslationInX,TranslationInY,TranslationInZ,TranslationInXAbsolute,TranslationInYAbsolute,TranslationInZAbsolute,SummedTranslationInXAbsolute,SummedTranslationInYAbsolute,SummedTranslationInZAbsolute,RotationAroundX,RotationAroundY,RotationAroundZ,RotationAroundXAbsolute,RotationAroundYAbsolute,RotationAroundZAbsolute,SummedRotationAroundXAbsolute,SummedRotationAroundYAbsolute,SummedRotationAroundZAbsolute,WrongNode,Success,HelpButtonPresses,TotalHelpButtonPressesForSequence,TimeForNode,SummedTimeForNodes,FullTaskTime,HelpActiveTime,HelpActive"
+            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + "_Recognition", inDirectory: documentsDirectory, options: .noAutomaticWrite)
+            self.logger?.header = "Trial,Mode,UserPosition,Scene,HighlightedNodes,SummedTrialTime,OverallTime,HelpCurrentlyActive,SummedHelpTime,HelpButtonPresses,SummedTranslationInX,SummedTranslationInY,SummedTranslationInZ,SummedTranslationInXAbsolute,SummedTranslationInYAbsolute,SummedTranslationInZAbsolute,SummedRotationAroundX,SummedRotationAroundY,SummedRotationAroundZ,SummedRotationAroundXAbsolute,SummedRotationAroundYAbsolute,SummedRotationAroundZAbsolute,#WrongNodes,Success,CUT!!,TimeForNode1,TimeForNode2,TimeForNode3,SummedTimeForNode1+2,HelpTimeForNode1,HelpTimeForNode2,HelpTimeForNode3,SummedHelpTimeForNode1+2,TranslationInXNode1,TranslationInYNode1,TranslationInZNode1,TranslationInXNode2,TranslationInYNode2,TranslationInZNode2,TranslationInXNode3,TranslationInYNode3,TranslationInZNode3,SummedTranslationInXNode1+2,SummedTranslationInYNode1+2,SummedTranslationInZNode1+2,TranslationInXAbsoluteNode1,TranslationInYAbsoluteNode1,TranslationInZAbsoluteNode1,TranslationInXAbsoluteNode2,TranslationInYAbsoluteNode2,TranslationInZAbsoluteNode2,TranslationInXAbsoluteNode3,TranslationInYAbsoluteNode3,TranslationInZAbsoluteNode3,SummedTranslationInXAbsoluteNode1+2,SummedTranslationInYAbsoluteNode1+2,SummedTranslationInZAbsoluteNode1+2,RotationAroundXNode1,RotationAroundYNode1,RotationAroundZNode1,RotationAroundXNode2,RotationAroundYNode2,RotationAroundZNode2,RotationAroundXNode3,RotationAroundYNode3,RotationAroundZNode3,SummedRotationAroundXNode1+2,SummedRotationAroundYNode1+2,SummedRotationAroundZNode1+2,RotationAroundXAbsoluteNode1,RotationAroundYAbsoluteNode1,RotationAroundZAbsoluteNode1,RotationAroundXAbsoluteNode2,RotationAroundYAbsoluteNode2,RotationAroundZAbsoluteNode2,RotationAroundXAbsoluteNode3,RotationAroundYAbsoluteNode3,RotationAroundZAbsoluteNode3,SummedRotationAroundXAbsoluteNode1+2,SummedRotationAroundYAbsoluteNode1+2,SummedRotationAroundZAbsoluteNode1+2,HelpButtonPressesNode1,HelpButtonPressesNode2,HelpButtonPressesNode3"
         }
         
         self.motionManager.startDeviceMotionUpdates(using: .xArbitraryCorrectedZVertical)
@@ -419,7 +423,7 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     }
     
     func updateHelpTime(){
-        currentMeasurement!.activeHelpTime += (1.0/30.0)
+        currentMeasurement!.activeHelpTimeForCurrentNode += (1.0/30.0)
     }
     
     func updateTaskTimes(){
@@ -428,31 +432,281 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     }
     
     func resetTimeForCurrentNode(){
-        currentMeasurement!.timeForCurrentNode = 0
+        currentMeasurement?.timeForCurrentNode = 0
+        currentMeasurement?.activeHelpTimeForCurrentNode = 0
     }
     
     
     func logCurrent(){
+        currentMeasurement!.summedTranslationInX += currentMeasurement!.translationInX
+        currentMeasurement!.summedTranslationInY += currentMeasurement!.translationInY
+        currentMeasurement!.summedTranslationInZ += currentMeasurement!.translationInZ
+        
+        currentMeasurement!.summedRotationAroundX += currentMeasurement!.rotationAroundX
+        currentMeasurement!.summedRotationAroundY += currentMeasurement!.rotationAroundY
+        currentMeasurement!.summedRotationAroundZ += currentMeasurement!.rotationAroundZ
+        
         currentMeasurement!.summedTranslationInXAbsolute += currentMeasurement!.translationInXAbsolute
         currentMeasurement!.summedTranslationInYAbsolute += currentMeasurement!.translationInYAbsolute
         currentMeasurement!.summedTranslationInZAbsolute += currentMeasurement!.translationInZAbsolute
+        
         currentMeasurement!.summedRotationAroundXAbsolute += currentMeasurement!.rotationAroundXAbsolute
         currentMeasurement!.summedRotationAroundYAbsolute += currentMeasurement!.rotationAroundYAbsolute
         currentMeasurement!.summedRotationAroundZAbsolute += currentMeasurement!.rotationAroundZAbsolute
+        
         currentMeasurement!.totalButtonPressesInSequence += currentMeasurement!.buttonPressesForCurrentNode
+        
         currentMeasurement!.summedTimeForNodes += currentMeasurement!.timeForCurrentNode
+        currentMeasurement!.summedActiveHelpTime += currentMeasurement!.activeHelpTimeForCurrentNode
+        
+        //Help Time for Single node
+        currentMeasurement!.activeHelpTimeForSingleNode.append(currentMeasurement!.activeHelpTimeForCurrentNode)
+        currentMeasurement!.summedActiveHelpTimeForSingleNode.append(currentMeasurement!.summedActiveHelpTime)
+        
+        //Time For Single Node
+        currentMeasurement!.timeForSingleNode.append(currentMeasurement!.timeForCurrentNode)
+        currentMeasurement!.summedTimeForCurrentNodes.append(currentMeasurement!.summedTimeForNodes)
+        
+        //Translation for Single Nodes
+        currentMeasurement!.translationInXForSingleNode.append(currentMeasurement!.translationInX)
+        currentMeasurement!.translationInYForSingleNode.append(currentMeasurement!.translationInY)
+        currentMeasurement!.translationInZForSingleNode.append(currentMeasurement!.translationInZ)
+        
+        currentMeasurement!.translationInXAbsoluteForSingleNode.append(currentMeasurement!.translationInXAbsolute)
+        currentMeasurement!.translationInYAbsoluteForSingleNode.append(currentMeasurement!.translationInYAbsolute)
+        currentMeasurement!.translationInZAbsoluteForSingleNode.append(currentMeasurement!.translationInZAbsolute)
+        
+        currentMeasurement!.summedTranslationInXAbsoluteForSingleNode.append(currentMeasurement!.summedTranslationInXAbsolute)
+        currentMeasurement!.summedTranslationInYAbsoluteForSingleNode.append(currentMeasurement!.summedTranslationInYAbsolute)
+        currentMeasurement!.summedTranslationInZAbsoluteForSingleNode.append(currentMeasurement!.summedTranslationInZAbsolute)
+        
+        currentMeasurement!.summedTranslationInXForSingleNode.append(currentMeasurement!.summedTranslationInX)
+        currentMeasurement!.summedTranslationInYForSingleNode.append(currentMeasurement!.summedTranslationInY)
+        currentMeasurement!.summedTranslationInZForSingleNode.append(currentMeasurement!.summedTranslationInZ)
+        
+        //Rotation for Single Nodes
+        currentMeasurement!.rotationAroundXForSingleNode.append(currentMeasurement!.rotationAroundX)
+        currentMeasurement!.rotationAroundYForSingleNode.append(currentMeasurement!.rotationAroundY)
+        currentMeasurement!.rotationAroundZForSingleNode.append(currentMeasurement!.rotationAroundZ)
+        
+        currentMeasurement!.rotationAroundXAbsoluteForSingleNode.append(currentMeasurement!.rotationAroundXAbsolute)
+        currentMeasurement!.rotationAroundYAbsoluteForSingleNode.append(currentMeasurement!.rotationAroundYAbsolute)
+        currentMeasurement!.rotationAroundZAbsoluteForSingleNode.append(currentMeasurement!.rotationAroundZAbsolute)
+        
+        currentMeasurement!.summedRotationAroundXAbsoluteForSingleNode.append(currentMeasurement!.summedRotationAroundXAbsolute)
+        currentMeasurement!.summedRotationAroundYAbsoluteForSingleNode.append(currentMeasurement!.summedRotationAroundYAbsolute)
+        currentMeasurement!.summedRotationAroundZAbsoluteForSingleNode.append(currentMeasurement!.summedRotationAroundZAbsolute)
+        
+        currentMeasurement!.summedRotationAroundXForSingleNode.append(currentMeasurement!.summedRotationAroundX)
+        currentMeasurement!.summedRotationAroundYForSingleNode.append(currentMeasurement!.summedRotationAroundY)
+        currentMeasurement!.summedRotationAroundZForSingleNode.append(currentMeasurement!.summedRotationAroundZ)
+        
+        //HelpButton Press for Single Node
+        currentMeasurement!.buttonPressesForSingleNode.append(currentMeasurement!.buttonPressesForCurrentNode)
+        
         
         if self.relocationTask!{
+            currentMeasurement!.selectedSequence.append(self.highlightedNode!.name!)
             if self.currentSequence[self.objectNumber] != self.highlightedNode!.name!{
                 print("Wrong node")
                 currentMeasurement!.wrongNode += 1
             }
-            self.relocationTaskLogger?.logObjects(in: [self.highlightedNode!.name!,currentMeasurement!.translationInX,currentMeasurement!.translationInY,currentMeasurement!.translationInZ,currentMeasurement!.translationInXAbsolute,currentMeasurement!.translationInYAbsolute,currentMeasurement!.translationInZAbsolute,currentMeasurement!.summedTranslationInXAbsolute,currentMeasurement!.summedTranslationInYAbsolute,currentMeasurement!.summedTranslationInZAbsolute,currentMeasurement!.rotationAroundX,currentMeasurement!.rotationAroundY,currentMeasurement!.rotationAroundZ,currentMeasurement!.rotationAroundXAbsolute,currentMeasurement!.rotationAroundYAbsolute,currentMeasurement!.rotationAroundZAbsolute,currentMeasurement!.summedRotationAroundXAbsolute,currentMeasurement!.summedRotationAroundYAbsolute,currentMeasurement!.summedRotationAroundZAbsolute,currentMeasurement!.wrongNode,currentMeasurement!.success,currentMeasurement!.buttonPressesForCurrentNode,currentMeasurement!.totalButtonPressesInSequence,currentMeasurement!.timeForCurrentNode,currentMeasurement!.summedTimeForNodes,currentMeasurement!.overallTime,currentMeasurement!.activeHelpTime,self.helpToggled])
-        }
-        else if !self.relocationTask!{
-            self.logger?.logObjects(in: [self.highlightedNode!.name!,currentMeasurement!.translationInX,currentMeasurement!.translationInY,currentMeasurement!.translationInZ,currentMeasurement!.translationInXAbsolute,currentMeasurement!.translationInYAbsolute,currentMeasurement!.translationInZAbsolute,currentMeasurement!.summedTranslationInXAbsolute,currentMeasurement!.summedTranslationInYAbsolute,currentMeasurement!.summedTranslationInZAbsolute,currentMeasurement!.rotationAroundX,currentMeasurement!.rotationAroundY,currentMeasurement!.rotationAroundZ,currentMeasurement!.rotationAroundXAbsolute,currentMeasurement!.rotationAroundYAbsolute,currentMeasurement!.rotationAroundZAbsolute,currentMeasurement!.summedRotationAroundXAbsolute,currentMeasurement!.summedRotationAroundYAbsolute,currentMeasurement!.summedRotationAroundZAbsolute,currentMeasurement!.wrongNode,currentMeasurement!.success,currentMeasurement!.buttonPressesForCurrentNode,currentMeasurement!.totalButtonPressesInSequence,currentMeasurement!.timeForCurrentNode,currentMeasurement!.summedTimeForNodes,currentMeasurement!.overallTime,currentMeasurement!.activeHelpTime,self.helpToggled])
         }
         
+        //Log
+        self.objectNumber += 1
+        if self.objectNumber == 3 {
+            self.stopDeviceUpdate()
+
+            if !self.relocationTask!{
+                self.logger?.logObjects(in: [self.sequenceNumber,
+                                             self.currentMode,
+                                             self.userPosition,
+                                             self.sceneNumber,
+                                             self.currentSequence.joined(separator: "/"),
+                                             currentMeasurement!.summedTimeForNodes,
+                                             currentMeasurement!.overallTime,
+                                             self.helpToggled,
+                                             currentMeasurement!.summedActiveHelpTime,
+                                             currentMeasurement!.totalButtonPressesInSequence,
+                                             currentMeasurement!.summedTranslationInX,
+                                             currentMeasurement!.summedTranslationInY,
+                                             currentMeasurement!.summedTranslationInZ,
+                                             currentMeasurement!.summedTranslationInXAbsolute,
+                                             currentMeasurement!.summedTranslationInYAbsolute,
+                                             currentMeasurement!.summedTranslationInZAbsolute,
+                                             currentMeasurement!.summedRotationAroundX,
+                                             currentMeasurement!.summedRotationAroundY,
+                                             currentMeasurement!.summedRotationAroundZ,
+                                             currentMeasurement!.summedRotationAroundXAbsolute,
+                                             currentMeasurement!.summedRotationAroundYAbsolute,
+                                             currentMeasurement!.summedRotationAroundZAbsolute,
+                                             currentMeasurement!.wrongNode,
+                                             currentMeasurement!.success,
+                                             "SINGULAR DATA FOLLOWING!",
+                                             currentMeasurement!.timeForSingleNode[0],
+                                             currentMeasurement!.timeForSingleNode[1],
+                                             currentMeasurement!.timeForSingleNode[2],
+                                             currentMeasurement!.summedTimeForCurrentNodes[1],
+                                             currentMeasurement!.activeHelpTimeForSingleNode[0],
+                                             currentMeasurement!.activeHelpTimeForSingleNode[1],
+                                             currentMeasurement!.activeHelpTimeForSingleNode[2],
+                                             currentMeasurement!.summedActiveHelpTimeForSingleNode[1],
+                                             currentMeasurement!.translationInXForSingleNode[0],
+                                             currentMeasurement!.translationInYForSingleNode[0],
+                                             currentMeasurement!.translationInZForSingleNode[0],
+                                             currentMeasurement!.translationInXForSingleNode[1],
+                                             currentMeasurement!.translationInYForSingleNode[1],
+                                             currentMeasurement!.translationInZForSingleNode[1],
+                                             currentMeasurement!.translationInXForSingleNode[2],
+                                             currentMeasurement!.translationInYForSingleNode[2],
+                                             currentMeasurement!.translationInZForSingleNode[2],
+                                             currentMeasurement!.summedTranslationInXForSingleNode[1],
+                                             currentMeasurement!.summedTranslationInYForSingleNode[1],
+                                             currentMeasurement!.summedTranslationInZForSingleNode[1],
+                                             currentMeasurement!.translationInXAbsoluteForSingleNode[0],
+                                             currentMeasurement!.translationInYAbsoluteForSingleNode[0],
+                                             currentMeasurement!.translationInZAbsoluteForSingleNode[0],
+                                             currentMeasurement!.translationInXAbsoluteForSingleNode[1],
+                                             currentMeasurement!.translationInYAbsoluteForSingleNode[1],
+                                             currentMeasurement!.translationInZAbsoluteForSingleNode[1],
+                                             currentMeasurement!.translationInXAbsoluteForSingleNode[2],
+                                             currentMeasurement!.translationInYAbsoluteForSingleNode[2],
+                                             currentMeasurement!.translationInZAbsoluteForSingleNode[2],
+                                             currentMeasurement!.summedTranslationInXAbsoluteForSingleNode[1],
+                                             currentMeasurement!.summedTranslationInYAbsoluteForSingleNode[1],
+                                             currentMeasurement!.summedTranslationInZAbsoluteForSingleNode[1],
+                                             currentMeasurement!.rotationAroundXForSingleNode[0],
+                                             currentMeasurement!.rotationAroundYForSingleNode[0],
+                                             currentMeasurement!.rotationAroundZForSingleNode[0],
+                                             currentMeasurement!.rotationAroundXForSingleNode[1],
+                                             currentMeasurement!.rotationAroundYForSingleNode[1],
+                                             currentMeasurement!.rotationAroundZForSingleNode[1],
+                                             currentMeasurement!.rotationAroundXForSingleNode[2],
+                                             currentMeasurement!.rotationAroundYForSingleNode[2],
+                                             currentMeasurement!.rotationAroundZForSingleNode[2],
+                                             currentMeasurement!.summedRotationAroundXForSingleNode[1],
+                                             currentMeasurement!.summedRotationAroundYForSingleNode[1],
+                                             currentMeasurement!.summedRotationAroundZForSingleNode[1],
+                                             currentMeasurement!.rotationAroundXAbsoluteForSingleNode[0],
+                                             currentMeasurement!.rotationAroundYAbsoluteForSingleNode[0],
+                                             currentMeasurement!.rotationAroundZAbsoluteForSingleNode[0],
+                                             currentMeasurement!.rotationAroundXAbsoluteForSingleNode[1],
+                                             currentMeasurement!.rotationAroundYAbsoluteForSingleNode[1],
+                                             currentMeasurement!.rotationAroundZAbsoluteForSingleNode[1],
+                                             currentMeasurement!.rotationAroundXAbsoluteForSingleNode[2],
+                                             currentMeasurement!.rotationAroundYAbsoluteForSingleNode[2],
+                                             currentMeasurement!.rotationAroundZAbsoluteForSingleNode[2],
+                                             currentMeasurement!.summedRotationAroundXAbsoluteForSingleNode[1],
+                                             currentMeasurement!.summedRotationAroundYAbsoluteForSingleNode[1],
+                                             currentMeasurement!.summedRotationAroundZAbsoluteForSingleNode[1],
+                                             currentMeasurement!.buttonPressesForSingleNode[0],
+                                             currentMeasurement!.buttonPressesForSingleNode[1],
+                                             currentMeasurement!.buttonPressesForSingleNode[2]])
+            }
+            else if self.relocationTask! {
+                self.relocationTask?.toggle()
+                
+                self.relocationTaskLogger?.logObjects(in: [self.sequenceNumber,
+                                                           self.currentMode,
+                                                           self.userPosition,
+                                                           self.sceneNumber,
+                                                           currentMeasurement!.selectedSequence.joined(separator: "/"),
+                                                           currentMeasurement!.summedTimeForNodes,
+                                                           currentMeasurement!.overallTime,
+                                                           self.helpToggled,
+                                                           currentMeasurement!.summedActiveHelpTime,
+                                                           currentMeasurement!.totalButtonPressesInSequence,
+                                                           currentMeasurement!.summedTranslationInX,
+                                                           currentMeasurement!.summedTranslationInY,
+                                                           currentMeasurement!.summedTranslationInZ,
+                                                           currentMeasurement!.summedTranslationInXAbsolute,
+                                                           currentMeasurement!.summedTranslationInYAbsolute,
+                                                           currentMeasurement!.summedTranslationInZAbsolute,
+                                                           currentMeasurement!.summedRotationAroundX,
+                                                           currentMeasurement!.summedRotationAroundY,
+                                                           currentMeasurement!.summedRotationAroundZ,
+                                                           currentMeasurement!.summedRotationAroundXAbsolute,
+                                                           currentMeasurement!.summedRotationAroundYAbsolute,
+                                                           currentMeasurement!.summedRotationAroundZAbsolute,
+                                                           currentMeasurement!.wrongNode,
+                                                           currentMeasurement!.success,
+                                                           "SINGULAR DATA FOLLOWING",
+                                                           currentMeasurement!.timeForSingleNode[0],
+                                                           currentMeasurement!.timeForSingleNode[1],
+                                                           currentMeasurement!.timeForSingleNode[2],
+                                                           currentMeasurement!.summedTimeForCurrentNodes[1],
+                                                           currentMeasurement!.activeHelpTimeForSingleNode[0],
+                                                           currentMeasurement!.activeHelpTimeForSingleNode[1],
+                                                           currentMeasurement!.activeHelpTimeForSingleNode[2],
+                                                           currentMeasurement!.summedActiveHelpTimeForSingleNode[1],
+                                                           currentMeasurement!.translationInXForSingleNode[0],
+                                                           currentMeasurement!.translationInYForSingleNode[0],
+                                                           currentMeasurement!.translationInZForSingleNode[0],
+                                                           currentMeasurement!.translationInXForSingleNode[1],
+                                                           currentMeasurement!.translationInYForSingleNode[1],
+                                                           currentMeasurement!.translationInZForSingleNode[1],
+                                                           currentMeasurement!.translationInXForSingleNode[2],
+                                                           currentMeasurement!.translationInYForSingleNode[2],
+                                                           currentMeasurement!.translationInZForSingleNode[2],
+                                                           currentMeasurement!.summedTranslationInXForSingleNode[1],
+                                                           currentMeasurement!.summedTranslationInYForSingleNode[1],
+                                                           currentMeasurement!.summedTranslationInZForSingleNode[1],
+                                                           currentMeasurement!.translationInXAbsoluteForSingleNode[0],
+                                                           currentMeasurement!.translationInYAbsoluteForSingleNode[0],
+                                                           currentMeasurement!.translationInZAbsoluteForSingleNode[0],
+                                                           currentMeasurement!.translationInXAbsoluteForSingleNode[1],
+                                                           currentMeasurement!.translationInYAbsoluteForSingleNode[1],
+                                                           currentMeasurement!.translationInZAbsoluteForSingleNode[1],
+                                                           currentMeasurement!.translationInXAbsoluteForSingleNode[2],
+                                                           currentMeasurement!.translationInYAbsoluteForSingleNode[2],
+                                                           currentMeasurement!.translationInZAbsoluteForSingleNode[2],
+                                                           currentMeasurement!.summedTranslationInXAbsoluteForSingleNode[1],
+                                                           currentMeasurement!.summedTranslationInYAbsoluteForSingleNode[1],
+                                                           currentMeasurement!.summedTranslationInZAbsoluteForSingleNode[1],
+                                                           currentMeasurement!.rotationAroundXForSingleNode[0],
+                                                           currentMeasurement!.rotationAroundYForSingleNode[0],
+                                                           currentMeasurement!.rotationAroundZForSingleNode[0],
+                                                           currentMeasurement!.rotationAroundXForSingleNode[1],
+                                                           currentMeasurement!.rotationAroundYForSingleNode[1],
+                                                           currentMeasurement!.rotationAroundZForSingleNode[1],
+                                                           currentMeasurement!.rotationAroundXForSingleNode[2],
+                                                           currentMeasurement!.rotationAroundYForSingleNode[2],
+                                                           currentMeasurement!.rotationAroundZForSingleNode[2],
+                                                           currentMeasurement!.summedRotationAroundXForSingleNode[1],
+                                                           currentMeasurement!.summedRotationAroundYForSingleNode[1],
+                                                           currentMeasurement!.summedRotationAroundZForSingleNode[1],
+                                                           currentMeasurement!.rotationAroundXAbsoluteForSingleNode[0],
+                                                           currentMeasurement!.rotationAroundYAbsoluteForSingleNode[0],
+                                                           currentMeasurement!.rotationAroundZAbsoluteForSingleNode[0],
+                                                           currentMeasurement!.rotationAroundXAbsoluteForSingleNode[1],
+                                                           currentMeasurement!.rotationAroundYAbsoluteForSingleNode[1],
+                                                           currentMeasurement!.rotationAroundZAbsoluteForSingleNode[1],
+                                                           currentMeasurement!.rotationAroundXAbsoluteForSingleNode[2],
+                                                           currentMeasurement!.rotationAroundYAbsoluteForSingleNode[2],
+                                                           currentMeasurement!.rotationAroundZAbsoluteForSingleNode[2],
+                                                           currentMeasurement!.summedRotationAroundXAbsoluteForSingleNode[1],
+                                                           currentMeasurement!.summedRotationAroundYAbsoluteForSingleNode[1],
+                                                           currentMeasurement!.summedRotationAroundZAbsoluteForSingleNode[1],
+                                                           currentMeasurement!.buttonPressesForSingleNode[0],
+                                                           currentMeasurement!.buttonPressesForSingleNode[1],
+                                                           currentMeasurement!.buttonPressesForSingleNode[2]])
+                
+                let informationPackage : [String: Any] = ["taskChangeData": "ChangeTask"]
+                NotificationCenter.default.post(name: .changeTaskMode, object: nil, userInfo: informationPackage)
+                let labelInformationPackage : [String : Any] = ["labelStringData" : "Sequence done."]
+                NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: labelInformationPackage)
+                let setConfirmationAlertOnPresenterInformationPackage : [String : Any] = ["confirmData" : "Confirm sequence?"]
+                NotificationCenter.default.post(name: .trialLogConfirmation, object: nil, userInfo: setConfirmationAlertOnPresenterInformationPackage)
+                
+                self.sequenceNumber += 1
+            }
+            print("Measurement stopped!")
+            self.currentMeasurement = nil
+            return
+        }
+        
+        //Reset for next node
         currentMeasurement!.translationInX = 0
         currentMeasurement!.translationInY = 0
         currentMeasurement!.translationInZ = 0
@@ -467,23 +721,8 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         currentMeasurement!.rotationAroundZAbsolute = 0
         currentMeasurement!.buttonPressesForCurrentNode = 0
         currentMeasurement!.timeForCurrentNode = 0
+        currentMeasurement!.activeHelpTimeForCurrentNode = 0
         
-        
-        self.objectNumber += 1
-        if self.objectNumber == 3 {
-            self.stopDeviceUpdate()
-            if self.relocationTask! {
-                self.relocationTask?.toggle()
-                let informationPackage : [String: Any] = ["taskChangeData": "ChangeTask"]
-                NotificationCenter.default.post(name: .changeTaskMode, object: nil, userInfo: informationPackage)
-                let labelInformationPackage : [String : Any] = ["labelStringData" : "Sequence done."]
-                NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: labelInformationPackage)
-                let setConfirmationAlertOnPresenterInformationPackage : [String : Any] = ["confirmData" : "Confirm sequence?"]
-                NotificationCenter.default.post(name: .trialLogConfirmation, object: nil, userInfo: setConfirmationAlertOnPresenterInformationPackage)
-            }
-            print("Measurement stopped!")
-            return
-        }
     }
     
     
@@ -497,33 +736,74 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     
     
      struct DataPoint{
-        var translationInX : Float = 0
-        var translationInY : Float = 0
-        var translationInZ : Float = 0
-        var translationInXAbsolute : Float = 0
-        var translationInYAbsolute : Float = 0
-        var translationInZAbsolute : Float = 0
-        var rotationAroundX : Float = 0
-        var rotationAroundY : Float = 0
-        var rotationAroundZ : Float = 0
-        var rotationAroundXAbsolute : Float = 0
-        var rotationAroundYAbsolute : Float = 0
-        var rotationAroundZAbsolute : Float = 0
-        var summedTranslationInXAbsolute : Float = 0
-        var summedTranslationInYAbsolute : Float = 0
-        var summedTranslationInZAbsolute : Float = 0
-        var summedRotationAroundXAbsolute : Float = 0
-        var summedRotationAroundYAbsolute : Float = 0
-        var summedRotationAroundZAbsolute : Float = 0
-        var wrongNode : Int = 0
-        var timeForCurrentNode : Float = 0
-        var summedTimeForNodes : Float = 0
-        var overallTime : Float = 0
-        var activeHelpTime : Float = 0
-        var buttonPressesForCurrentNode : Int = 0
-        var totalButtonPressesInSequence : Int = 0
-        var success: Int{
-            get { return wrongNode > 0 ? 0 : 1}
-        }
+         var translationInX : Float = 0
+         var translationInY : Float = 0
+         var translationInZ : Float = 0
+         var summedTranslationInX : Float = 0
+         var summedTranslationInY : Float = 0
+         var summedTranslationInZ : Float = 0
+         var translationInXAbsolute : Float = 0
+         var translationInYAbsolute : Float = 0
+         var translationInZAbsolute : Float = 0
+         var summedTranslationInXAbsolute : Float = 0
+         var summedTranslationInYAbsolute : Float = 0
+         var summedTranslationInZAbsolute : Float = 0
+         
+         var rotationAroundX : Float = 0
+         var rotationAroundY : Float = 0
+         var rotationAroundZ : Float = 0
+         var summedRotationAroundX : Float = 0
+         var summedRotationAroundY : Float = 0
+         var summedRotationAroundZ : Float = 0
+         var rotationAroundXAbsolute : Float = 0
+         var rotationAroundYAbsolute : Float = 0
+         var rotationAroundZAbsolute : Float = 0
+         var summedRotationAroundXAbsolute : Float = 0
+         var summedRotationAroundYAbsolute : Float = 0
+         var summedRotationAroundZAbsolute : Float = 0
+         
+         
+         var wrongNode : Int = 0
+         var timeForCurrentNode : Float = 0
+         var summedTimeForNodes : Float = 0
+         var overallTime : Float = 0
+         var activeHelpTimeForCurrentNode : Float = 0
+         var summedActiveHelpTime : Float = 0
+         var buttonPressesForCurrentNode : Int = 0
+         var totalButtonPressesInSequence : Int = 0
+         
+         var success: Int{
+             get { return wrongNode > 0 ? 0 : 1}
+         }
+         var translationInXForSingleNode : [Float] = []
+         var translationInYForSingleNode : [Float] = []
+         var translationInZForSingleNode : [Float] = []
+         var translationInXAbsoluteForSingleNode : [Float] = []
+         var translationInYAbsoluteForSingleNode : [Float] = []
+         var translationInZAbsoluteForSingleNode : [Float] = []
+         var rotationAroundXForSingleNode : [Float] = []
+         var rotationAroundYForSingleNode : [Float] = []
+         var rotationAroundZForSingleNode : [Float] = []
+         var rotationAroundXAbsoluteForSingleNode : [Float] = []
+         var rotationAroundYAbsoluteForSingleNode : [Float] = []
+         var rotationAroundZAbsoluteForSingleNode : [Float] = []
+         var summedTranslationInXAbsoluteForSingleNode : [Float] = []
+         var summedTranslationInYAbsoluteForSingleNode : [Float] = []
+         var summedTranslationInZAbsoluteForSingleNode : [Float] = []
+         var summedRotationAroundXAbsoluteForSingleNode : [Float] = []
+         var summedRotationAroundYAbsoluteForSingleNode : [Float] = []
+         var summedRotationAroundZAbsoluteForSingleNode : [Float] = []
+         var buttonPressesForSingleNode : [Int] = []
+         var activeHelpTimeForSingleNode : [Float] = []
+         var summedActiveHelpTimeForSingleNode : [Float] = []
+         var timeForSingleNode : [Float] = []
+         var summedTimeForCurrentNodes : [Float] = []
+         var selectedSequence : [String] = []
+         var summedTranslationInXForSingleNode : [Float] = []
+         var summedTranslationInYForSingleNode : [Float] = []
+         var summedTranslationInZForSingleNode : [Float] = []
+         var summedRotationAroundXForSingleNode : [Float] = []
+         var summedRotationAroundYForSingleNode : [Float] = []
+         var summedRotationAroundZForSingleNode : [Float] = []
     }
 }

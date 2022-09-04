@@ -545,6 +545,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 self.pluginInstructionsLookupButton.isHidden = true
                 self.softwarePenButton.isHidden = true
                 self.menuToggleButton.isHidden = true
+                self.menuView.isHidden = true
             }
         } else {
             self.undoButton.isHidden = false
@@ -1242,8 +1243,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                         let cancelAction = UIAlertAction(title: "Delete", style: .default, handler: {
                             action in
                             currentPlugin.logger?.removeLastRow()
-                            currentPlugin.logger?.removeLastRow()
-                            currentPlugin.logger?.removeLastRow()
                             currentPlugin.sequenceNumber -= 1
                             let confirmationData = "Delete"
                             if !(self.multipeerSession?.connectedPeers.isEmpty)!{
@@ -1328,40 +1327,26 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                     }
                 case "Start":
                     DispatchQueue.main.async {
-                        self.rayToggledOn = true
-                        currentPlugin?.helpToggled = true
-                        self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemGreen
-                        if currentPlugin?.currentMode == "Video"{
+                       // self.rayToggledOn = true
+                        //currentPlugin?.helpToggled = true
+                        //self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemGreen
+                        if currentPlugin?.currentMode == "Video" && currentPlugin!.helpToggled{
                             self.pipView.isHidden = false
                         }
                         currentPlugin?.startDeviceUpdate()
                     }
                 case "Log":
-                    DispatchQueue.main.async {
-                        currentPlugin?.logCurrent()
-                    }
+                    currentPlugin?.logCurrent()
+                    
                 case "ResetCurrentNodeTime":
-                    DispatchQueue.main.async {
-                        currentPlugin?.resetTimeForCurrentNode()
-                    }
+                    currentPlugin?.resetTimeForCurrentNode()
                 case "WriteOut":
-                    DispatchQueue.main.async {
                         currentPlugin?.logger?.writeOut()
                         currentPlugin?.relocationTaskLogger?.writeOut()
-                    }
+                    
                 case "Delete":
-                    DispatchQueue.main.async {
-                        if currentPlugin!.relocationTask!{
-                            currentPlugin?.relocationTaskLogger?.removeLastRow()
-                            currentPlugin?.relocationTaskLogger?.removeLastRow()
-                            currentPlugin?.relocationTaskLogger?.removeLastRow()
-                        }
-                        else if !currentPlugin!.relocationTask!{
-                            currentPlugin?.logger?.removeLastRow()
-                            currentPlugin?.logger?.removeLastRow()
-                            currentPlugin?.logger?.removeLastRow()
-                        }
-                    }
+                        currentPlugin?.sequenceNumber -= 1
+                        currentPlugin?.logger?.removeLastRow()
                 default:
                     DispatchQueue.main.async {
                         if let highlightedNode = self.pluginManager.penScene.drawingNode.childNodes.filter({$0.name == stringCommandData}).first as? ARPenStudyNode{
