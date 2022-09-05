@@ -104,7 +104,7 @@
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="vKU-2l-six">
                                 <rect key="frame" x="100" y="58" width="696" height="300"/>
                             </imageView>
-                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="s9l-uD-5MF" customClass="MessageLabel" customModule="ARPen" customModuleProvider="target">
+                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="s9l-uD-5MF" customClass="MessageLabel" customModule="ARPen" customModuleProvider="target">
                                 <rect key="frame" x="244" y="5" width="281" height="89"/>
                                 <color key="backgroundColor" red="0.67518979708481697" green="0.67094332037359172" blue="0.67943627379604221" alpha="0.87877338435374153" colorSpace="custom" customColorSpace="displayP3"/>
                                 <constraints>

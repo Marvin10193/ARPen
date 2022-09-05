@@ -1340,24 +1340,22 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                     
                 case "ResetCurrentNodeTime":
                     currentPlugin?.resetTimeForCurrentNode()
+                    messageLabel.displayMessage("Please say the number of the shown cube.", duration: 2)
                 case "WriteOut":
-                        currentPlugin?.logger?.writeOut()
-                        currentPlugin?.relocationTaskLogger?.writeOut()
+                    currentPlugin?.logger?.writeOut()
+                    currentPlugin?.relocationTaskLogger?.writeOut()
                     
                 case "Delete":
-                        currentPlugin?.sequenceNumber -= 1
-                        currentPlugin?.logger?.removeLastRow()
+                    currentPlugin?.sequenceNumber -= 1
+                    currentPlugin?.logger?.removeLastRow()
+                    currentPlugin?.relocationTaskLogger?.removeLastRow()
                 default:
                     DispatchQueue.main.async {
                         if let highlightedNode = self.pluginManager.penScene.drawingNode.childNodes.filter({$0.name == stringCommandData}).first as? ARPenStudyNode{
-                            if self.pluginManager.activePlugin is SpectatorSharedARPlugin{
-                                (self.pluginManager.activePlugin as? SpectatorSharedARPlugin)?.highlightedNode = highlightedNode
-                            }
+                            currentPlugin?.highlightedNode = highlightedNode
                         }
                         else{
-                            if self.pluginManager.activePlugin is SpectatorSharedARPlugin{
-                                (self.pluginManager.activePlugin as? SpectatorSharedARPlugin)?.highlightedNode = nil
-                            }
+                            currentPlugin?.highlightedNode = nil
                         }
                     }
                 }

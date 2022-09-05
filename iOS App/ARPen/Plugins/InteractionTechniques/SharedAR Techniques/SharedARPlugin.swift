@@ -208,13 +208,20 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
                 self.sequenceNumber += 1
                 self.objectNumber = 0
                 
-                if self.sequenceNumber < 6{
+                if self.sequenceNumber < 8{
                     let informationPackageDoneMeassuring: [String : Any] = ["labelStringData": "Data Point done, switch task!"]
                     NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackageDoneMeassuring)
+                    
+                    let informationPackageSwapTask : [String : Any] = ["taskChangeData" : "ChangeTask"]
+                    NotificationCenter.default.post(name: .changeTaskMode, object: nil, userInfo: informationPackageSwapTask)
+                    self.relocationTask?.toggle()
                 }
                 else{
                     let informationPackageDoneMeassuring: [String : Any] = ["labelStringData": "One last relocation, then next setting!"]
                     NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackageDoneMeassuring)
+                    let informationPackageSwapTask : [String : Any] = ["taskChangeData" : "ChangeTask"]
+                    NotificationCenter.default.post(name: .changeTaskMode, object: nil, userInfo: informationPackageSwapTask)
+                    self.relocationTask?.toggle()
                 }
             }
         }
