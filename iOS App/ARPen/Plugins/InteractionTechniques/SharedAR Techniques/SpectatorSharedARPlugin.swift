@@ -30,7 +30,7 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     var logger : CSVLogFile?
     var relocationTaskLogger : CSVLogFile?
     
-    let userID = "0"
+    let userID = "2000"
     
     private var motionManager : CMMotionManager = CMMotionManager()
     var currentMeasurement: DataPoint? = nil
@@ -50,6 +50,7 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     var layersAsTextures : [CALayer] = []
     
     var sequenceNumber = 0
+    var buttonPressesOutsideOfTrial = 0
 
     
     var highlightedNode : ARPenStudyNode? = nil{
@@ -267,7 +268,7 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         
         for row in csvData!.rows{
             var arPenStudyNode : ARPenStudyNode
-            arPenStudyNode = studyNodeClass.init(withPosition: SCNVector3(row[1] as! Double, row[2] as! Double - 0.2, row[3] as! Double), andDimension: Float(0.03))
+            arPenStudyNode = studyNodeClass.init(withPosition: SCNVector3(row[1] as! Double, row[2] as! Double, row[3] as! Double), andDimension: Float(0.03))
             arPenStudyNode.inTrialState = true
             arPenStudyNode.name = String(row.index)
             arPenStudyNode.geometry?.firstMaterial?.diffuse.contents = self.layersAsTextures[row.index]
@@ -296,6 +297,7 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         
         self.objectNumber = 0
         self.sequenceNumber = 0
+        self.buttonPressesOutsideOfTrial = 0
 
         
         //reset recorded actions of undo redo manager
@@ -400,18 +402,20 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         print("Meassurement started")
         currentMeasurement = DataPoint()
         if self.relocationTask!{
-            self.relocationTaskLogger = CSVLogFile(name: "SharedAR_ID " + userID + "_Relocation" , inDirectory: documentsDirectory, options: .noAutomaticWrite)
-            self.relocationTaskLogger?.header = "Trial,Mode,UserPosition,Scene,HighlightedNodes,SummedTrialTime,SummedTranslationInX,SummedTranslationInY,SummedTranslationInZ,SummedTranslationInXAbsolute,SummedTranslationInYAbsolute,SummedTranslationInZAbsolute,SummedRotationAroundX,SummedRotationAroundY,SummedRotationAroundZ,SummedRotationAroundXAbsolute,SummedRotationAroundYAbsolute,SummedRotationAroundZAbsolute,#WrongNodes,Success,CUT!!,OverallTime,HelpCurrentlyActive,SummedHelpTime,HelpButtonPresses,TimeForNode1,TimeForNode2,TimeForNode3,SummedTimeForNode1+2,HelpTimeForNode1,HelpTimeForNode2,HelpTimeForNode3,SummedHelpTimeForNode1+2,TranslationInXNode1,TranslationInYNode1,TranslationInZNode1,TranslationInXNode2,TranslationInYNode2,TranslationInZNode2,TranslationInXNode3,TranslationInYNode3,TranslationInZNode3,SummedTranslationInXNode1+2,SummedTranslationInYNode1+2,SummedTranslationInZNode1+2,TranslationInXAbsoluteNode1,TranslationInYAbsoluteNode1,TranslationInZAbsoluteNode1,TranslationInXAbsoluteNode2,TranslationInYAbsoluteNode2,TranslationInZAbsoluteNode2,TranslationInXAbsoluteNode3,TranslationInYAbsoluteNode3,TranslationInZAbsoluteNode3,SummedTranslationInXAbsoluteNode1+2,SummedTranslationInYAbsoluteNode1+2,SummedTranslationInZAbsoluteNode1+2,RotationAroundXNode1,RotationAroundYNode1,RotationAroundZNode1,RotationAroundXNode2,RotationAroundYNode2,RotationAroundZNode2,RotationAroundXNode3,RotationAroundYNode3,RotationAroundZNode3,SummedRotationAroundXNode1+2,SummedRotationAroundYNode1+2,SummedRotationAroundZNode1+2,RotationAroundXAbsoluteNode1,RotationAroundYAbsoluteNode1,RotationAroundZAbsoluteNode1,RotationAroundXAbsoluteNode2,RotationAroundYAbsoluteNode2,RotationAroundZAbsoluteNode2,RotationAroundXAbsoluteNode3,RotationAroundYAbsoluteNode3,RotationAroundZAbsoluteNode3,SummedRotationAroundXAbsoluteNode1+2,SummedRotationAroundYAbsoluteNode1+2,SummedRotationAroundZAbsoluteNode1+2,HelpButtonPressesNode1,HelpButtonPressesNode2,HelpButtonPressesNode3"
+            self.relocationTaskLogger = CSVLogFile(name: "SharedAR_ID " + userID + "_Relocation" , inDirectory: documentsDirectory, options: .init())
+            self.relocationTaskLogger?.header = "Trial,Mode,UserPosition,Scene,HighlightedNodes,SummedTrialTime,SummedTranslationInX,SummedTranslationInY,SummedTranslationInZ,SummedTranslationInXAbsolute,SummedTranslationInYAbsolute,SummedTranslationInZAbsolute,SummedRotationAroundX,SummedRotationAroundY,SummedRotationAroundZ,SummedRotationAroundXAbsolute,SummedRotationAroundYAbsolute,SummedRotationAroundZAbsolute,#WrongNodes,Success,CUT!!,ButtonPressesOutsideOfTrial,OverallTime,HelpCurrentlyActive,SummedHelpTime,HelpButtonPresses,TimeForNode1,TimeForNode2,TimeForNode3,SummedTimeForNode1+2,HelpTimeForNode1,HelpTimeForNode2,HelpTimeForNode3,SummedHelpTimeForNode1+2,TranslationInXNode1,TranslationInYNode1,TranslationInZNode1,TranslationInXNode2,TranslationInYNode2,TranslationInZNode2,TranslationInXNode3,TranslationInYNode3,TranslationInZNode3,SummedTranslationInXNode1+2,SummedTranslationInYNode1+2,SummedTranslationInZNode1+2,TranslationInXAbsoluteNode1,TranslationInYAbsoluteNode1,TranslationInZAbsoluteNode1,TranslationInXAbsoluteNode2,TranslationInYAbsoluteNode2,TranslationInZAbsoluteNode2,TranslationInXAbsoluteNode3,TranslationInYAbsoluteNode3,TranslationInZAbsoluteNode3,SummedTranslationInXAbsoluteNode1+2,SummedTranslationInYAbsoluteNode1+2,SummedTranslationInZAbsoluteNode1+2,RotationAroundXNode1,RotationAroundYNode1,RotationAroundZNode1,RotationAroundXNode2,RotationAroundYNode2,RotationAroundZNode2,RotationAroundXNode3,RotationAroundYNode3,RotationAroundZNode3,SummedRotationAroundXNode1+2,SummedRotationAroundYNode1+2,SummedRotationAroundZNode1+2,RotationAroundXAbsoluteNode1,RotationAroundYAbsoluteNode1,RotationAroundZAbsoluteNode1,RotationAroundXAbsoluteNode2,RotationAroundYAbsoluteNode2,RotationAroundZAbsoluteNode2,RotationAroundXAbsoluteNode3,RotationAroundYAbsoluteNode3,RotationAroundZAbsoluteNode3,SummedRotationAroundXAbsoluteNode1+2,SummedRotationAroundYAbsoluteNode1+2,SummedRotationAroundZAbsoluteNode1+2,HelpButtonPressesNode1,HelpButtonPressesNode2,HelpButtonPressesNode3"
         }
         else if !self.relocationTask!{
-            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + "_Recognition", inDirectory: documentsDirectory, options: .noAutomaticWrite)
-            self.logger?.header = "Trial,Mode,UserPosition,Scene,HighlightedNodes,SummedTrialTime,OverallTime,HelpCurrentlyActive,SummedHelpTime,HelpButtonPresses,SummedTranslationInX,SummedTranslationInY,SummedTranslationInZ,SummedTranslationInXAbsolute,SummedTranslationInYAbsolute,SummedTranslationInZAbsolute,SummedRotationAroundX,SummedRotationAroundY,SummedRotationAroundZ,SummedRotationAroundXAbsolute,SummedRotationAroundYAbsolute,SummedRotationAroundZAbsolute,#WrongNodes,Success,CUT!!,TimeForNode1,TimeForNode2,TimeForNode3,SummedTimeForNode1+2,HelpTimeForNode1,HelpTimeForNode2,HelpTimeForNode3,SummedHelpTimeForNode1+2,TranslationInXNode1,TranslationInYNode1,TranslationInZNode1,TranslationInXNode2,TranslationInYNode2,TranslationInZNode2,TranslationInXNode3,TranslationInYNode3,TranslationInZNode3,SummedTranslationInXNode1+2,SummedTranslationInYNode1+2,SummedTranslationInZNode1+2,TranslationInXAbsoluteNode1,TranslationInYAbsoluteNode1,TranslationInZAbsoluteNode1,TranslationInXAbsoluteNode2,TranslationInYAbsoluteNode2,TranslationInZAbsoluteNode2,TranslationInXAbsoluteNode3,TranslationInYAbsoluteNode3,TranslationInZAbsoluteNode3,SummedTranslationInXAbsoluteNode1+2,SummedTranslationInYAbsoluteNode1+2,SummedTranslationInZAbsoluteNode1+2,RotationAroundXNode1,RotationAroundYNode1,RotationAroundZNode1,RotationAroundXNode2,RotationAroundYNode2,RotationAroundZNode2,RotationAroundXNode3,RotationAroundYNode3,RotationAroundZNode3,SummedRotationAroundXNode1+2,SummedRotationAroundYNode1+2,SummedRotationAroundZNode1+2,RotationAroundXAbsoluteNode1,RotationAroundYAbsoluteNode1,RotationAroundZAbsoluteNode1,RotationAroundXAbsoluteNode2,RotationAroundYAbsoluteNode2,RotationAroundZAbsoluteNode2,RotationAroundXAbsoluteNode3,RotationAroundYAbsoluteNode3,RotationAroundZAbsoluteNode3,SummedRotationAroundXAbsoluteNode1+2,SummedRotationAroundYAbsoluteNode1+2,SummedRotationAroundZAbsoluteNode1+2,HelpButtonPressesNode1,HelpButtonPressesNode2,HelpButtonPressesNode3"
+            self.logger = CSVLogFile(name: "SharedAR_ID" + userID + "_Recognition", inDirectory: documentsDirectory, options: .init())
+            self.logger?.header = "Trial,Mode,UserPosition,Scene,HighlightedNodes,SummedTrialTime,OverallTime,HelpCurrentlyActive,SummedHelpTime,HelpButtonPresses,SummedTranslationInX,SummedTranslationInY,SummedTranslationInZ,SummedTranslationInXAbsolute,SummedTranslationInYAbsolute,SummedTranslationInZAbsolute,SummedRotationAroundX,SummedRotationAroundY,SummedRotationAroundZ,SummedRotationAroundXAbsolute,SummedRotationAroundYAbsolute,SummedRotationAroundZAbsolute,#WrongNodes,Success,CUT!!,ButtonPressesOutsideOfTrial,TimeForNode1,TimeForNode2,TimeForNode3,SummedTimeForNode1+2,HelpTimeForNode1,HelpTimeForNode2,HelpTimeForNode3,SummedHelpTimeForNode1+2,TranslationInXNode1,TranslationInYNode1,TranslationInZNode1,TranslationInXNode2,TranslationInYNode2,TranslationInZNode2,TranslationInXNode3,TranslationInYNode3,TranslationInZNode3,SummedTranslationInXNode1+2,SummedTranslationInYNode1+2,SummedTranslationInZNode1+2,TranslationInXAbsoluteNode1,TranslationInYAbsoluteNode1,TranslationInZAbsoluteNode1,TranslationInXAbsoluteNode2,TranslationInYAbsoluteNode2,TranslationInZAbsoluteNode2,TranslationInXAbsoluteNode3,TranslationInYAbsoluteNode3,TranslationInZAbsoluteNode3,SummedTranslationInXAbsoluteNode1+2,SummedTranslationInYAbsoluteNode1+2,SummedTranslationInZAbsoluteNode1+2,RotationAroundXNode1,RotationAroundYNode1,RotationAroundZNode1,RotationAroundXNode2,RotationAroundYNode2,RotationAroundZNode2,RotationAroundXNode3,RotationAroundYNode3,RotationAroundZNode3,SummedRotationAroundXNode1+2,SummedRotationAroundYNode1+2,SummedRotationAroundZNode1+2,RotationAroundXAbsoluteNode1,RotationAroundYAbsoluteNode1,RotationAroundZAbsoluteNode1,RotationAroundXAbsoluteNode2,RotationAroundYAbsoluteNode2,RotationAroundZAbsoluteNode2,RotationAroundXAbsoluteNode3,RotationAroundYAbsoluteNode3,RotationAroundZAbsoluteNode3,SummedRotationAroundXAbsoluteNode1+2,SummedRotationAroundYAbsoluteNode1+2,SummedRotationAroundZAbsoluteNode1+2,HelpButtonPressesNode1,HelpButtonPressesNode2,HelpButtonPressesNode3"
         }
         
         self.motionManager.startDeviceMotionUpdates(using: .xArbitraryCorrectedZVertical)
         self.timerForMovementUpdate = Timer.scheduledTimer(withTimeInterval: (1.0/30.0), repeats: true, block: {_ in self.updateMovement()})
         self.timerForTaskTime = Timer.scheduledTimer(withTimeInterval: (1.0/30.0), repeats: true, block: {_ in self.updateTaskTimes()})
-        self.startHelpTimer()
+        if self.helpToggled{
+            self.startHelpTimer()
+        }
     }
     
     func startHelpTimer(){
@@ -544,6 +548,7 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
                                              "FILL IN MANUALLY",
                                              "FILL IN MANUALLY",
                                              "SINGULAR DATA FOLLOWING!",
+                                             self.buttonPressesOutsideOfTrial,
                                              currentMeasurement!.timeForSingleNode[0],
                                              currentMeasurement!.timeForSingleNode[1],
                                              currentMeasurement!.timeForSingleNode[2],
@@ -628,6 +633,7 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
                                                            currentMeasurement!.wrongNode,
                                                            currentMeasurement!.success,
                                                            "SINGULAR DATA FOLLOWING",
+                                                           self.buttonPressesOutsideOfTrial,
                                                            currentMeasurement!.overallTime,
                                                            self.helpToggled,
                                                            currentMeasurement!.summedActiveHelpTime,
@@ -700,6 +706,7 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
                 NotificationCenter.default.post(name: .trialLogConfirmation, object: nil, userInfo: setConfirmationAlertOnPresenterInformationPackage)
                 
                 self.sequenceNumber += 1
+                self.buttonPressesOutsideOfTrial = 0
             }
             print("Measurement stopped!")
             self.currentMeasurement = nil

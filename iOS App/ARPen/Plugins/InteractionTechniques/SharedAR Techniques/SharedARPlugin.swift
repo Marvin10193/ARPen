@@ -28,7 +28,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     
     var logger : CSVLogFile?
     
-    let userID = "0"
+    let userID = "2000"
     
     var userPosition = "Opposite"
     
@@ -120,7 +120,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             }
             self.csvData = csvData
             self.sceneConstructionResults = preparedARPenNodes(withScene: pluginManager!.penScene, andView: pluginManager!.sceneView, andStudyNodeType: ARPenBoxNode.self)
-        case 1,2,3,4,5,6,7,8,9,10,12:
+        case 1,2,3,4,5,6,7,8,9,10,11,12:
             guard let csvData = try? DataFrame(contentsOfCSVFile: documentsDirectory.appendingPathComponent("Scene"+String(sceneNumber)).appendingPathExtension("csv")) else{
                 let informationPackage : [String: Any] = ["labelStringData": "Could not load CSV!"]
                 NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
@@ -143,7 +143,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         
         for row in csvData!.rows{
             var arPenStudyNode : ARPenStudyNode
-            arPenStudyNode = studyNodeClass.init(withPosition: SCNVector3(row[1] as! Double, row[2] as! Double - 0.2, row[3] as! Double), andDimension: Float(0.03))
+            arPenStudyNode = studyNodeClass.init(withPosition: SCNVector3(row[1] as! Double, row[2] as! Double , row[3] as! Double), andDimension: Float(0.03))
             arPenStudyNode.inTrialState = true
             arPenStudyNode.name = String(row.index)
             arPenStudyNode.geometry?.firstMaterial?.diffuse.contents = layersAsTextures[row.index]
@@ -167,7 +167,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
                 NotificationCenter.default.post(name: .measurementCommand, object: nil, userInfo: startMeasurementInformationPackage)
                 
                 self.currentMeasurement = DataPoint()
-                self.logger = CSVLogFile(name: "SharedAR_ID" + userID + "_RelocationPresenter", inDirectory: self.documentsDirectory, options: .noAutomaticWrite)
+                self.logger = CSVLogFile(name: "SharedAR_ID" + userID + "_RelocationPresenter", inDirectory: self.documentsDirectory, options: .init())
                 self.logger?.header = "Trial,Mode,UserPosition,Scene,HightlightedNodes,SummedTrialTime,OverallTime,TimeForNode1,TimeForNode2,TimeForNode3,SummedTimeNode1+2"
                 self.timer = Timer.scheduledTimer(timeInterval: (1.0/30.0), target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
             }
@@ -189,7 +189,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             self.currentMeasurement!.summedTimeForCurrentNodes.append(self.currentMeasurement!.summedTimeCurrentNodes)
                     
             //Set Label to no Text, so i know its stopped currently
-            let informationPackage : [String : Any] = ["sharedARInfoLabelData": " "]
+            let informationPackage : [String : Any] = ["sharedARInfoLabelData": ""]
             NotificationCenter.default.post(name: .infoLabelCommand, object: nil, userInfo: informationPackage)
             
             //Send Sequence Up Until now
@@ -208,7 +208,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
                 self.sequenceNumber += 1
                 self.objectNumber = 0
                 
-                if self.sequenceNumber < 8{
+                if self.sequenceNumber < 7{
                     let informationPackageDoneMeassuring: [String : Any] = ["labelStringData": "Data Point done, switch task!"]
                     NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackageDoneMeassuring)
                     
@@ -297,14 +297,14 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
                         let informationPackage : [String : Any] = ["nodeHighlightData" : self.highlightedNode?.name!]
                         NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
 
-                        for node in pluginManager.penScene.drawingNode.childNodes{
+                        /*for node in pluginManager.penScene.drawingNode.childNodes{
                             if node.name != self.highlightedNode!.name{
                                 node.opacity = 0.5
                             }
                             else{
                                 node.opacity = 1.0
                             }
-                        }
+                        }*/
                     default:
                         let informationPackage: [String : Any] = ["labelStringData" : "Unknown Mode Set!"]
                         NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
@@ -336,9 +336,9 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
                         let informationPackage : [String : Any] = ["nodeHighlightData" : "Nil"]
                         NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
                         
-                        for node in pluginManager.penScene.drawingNode.childNodes{
+                        /*for node in pluginManager.penScene.drawingNode.childNodes{
                             node.opacity = 0.5
-                        }
+                        }*/
                         
                     default:
                         let informationPackage: [String : Any] = ["labelStringData" : "Unknown Mode Set!"]

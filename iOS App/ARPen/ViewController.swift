@@ -540,7 +540,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
             }
             if newActivePlugin is SpectatorSharedARPlugin{
                 self.toggleSharedARHelpLabel.isHidden = false
-                self.toggleSharedARHelp.isHidden = false
+                self.toggleSharedARHelp.isHidden = true
                 self.settingsButton.isHidden = true
                 self.pluginInstructionsLookupButton.isHidden = true
                 self.softwarePenButton.isHidden = true
@@ -1214,6 +1214,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
             if self.pluginManager.activePlugin is SpectatorSharedARPlugin{
                 let currentPlugin = self.pluginManager.activePlugin as! SpectatorSharedARPlugin
                 currentPlugin.currentSequence = sequenceData
+                messageLabel.displayMessage("", duration: 1)
             }
         }
         else if let stringCommandData = try? JSONDecoder().decode(String.self, from: data){
@@ -1224,13 +1225,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                     DispatchQueue.main.async {
                         currentPlugin.relocationTask?.toggle()
                         currentPlugin.highlightedNode = nil
+                        self.messageLabel.displayMessage("Now swap to next setup.")
                     }
                 case "Confirm sequence?":
                     DispatchQueue.main.async {
                         let confirmationController = UIAlertController(title: stringCommandData, message: nil, preferredStyle: .alert)
                         let confirmAction = UIAlertAction(title: "Save", style: .default, handler: {
                             action in
-                            currentPlugin.logger?.writeOut()
                             let confirmationData = "WriteOut"
                             if !(self.multipeerSession?.connectedPeers.isEmpty)!{
                                 guard let encodedConfirmationData = try? JSONEncoder().encode(confirmationData) else{
@@ -1267,7 +1268,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 case "Base":
                     DispatchQueue.main.async {
                         self.toggleSharedARHelpLabel.isHidden = false
-                        self.toggleSharedARHelp.isHidden = false
+                        self.toggleSharedARHelp.isHidden = true
                         self.pipView.isHidden = true
                         self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemGreen
                         self.rayToggledOn = true
@@ -1319,6 +1320,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                         self.pipView.isHidden = true
                         if currentPlugin?.relocationTask! == true {
                             self.toggleSharedARHelp.isHidden = true
+                            currentPlugin?.pluginManager?.penScene.drawingNode.childNodes.first(where: {$0.name == "renderedRay"})?.removeFromParentNode()
                             let alertController = UIAlertController(title: "Start Relocation Task", message: nil, preferredStyle: .alert)
                             let defaultAlertAction = UIAlertAction(title: "START!", style: .default, handler: {action in currentPlugin?.startDeviceUpdate()})
                             alertController.addAction(defaultAlertAction)
@@ -1327,28 +1329,19 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                     }
                 case "Start":
                     DispatchQueue.main.async {
-                       // self.rayToggledOn = true
-                        //currentPlugin?.helpToggled = true
-                        //self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemGreen
-                        if currentPlugin?.currentMode == "Video" && currentPlugin!.helpToggled{
-                            self.pipView.isHidden = false
-                        }
                         currentPlugin?.startDeviceUpdate()
                     }
                 case "Log":
                     currentPlugin?.logCurrent()
-                    
                 case "ResetCurrentNodeTime":
                     currentPlugin?.resetTimeForCurrentNode()
-                    messageLabel.displayMessage("Please say the number of the shown cube.", duration: 2)
+                    messageLabel.displayMessage("Please say when you found the cube.", duration: 60)
                 case "WriteOut":
-                    currentPlugin?.logger?.writeOut()
-                    currentPlugin?.relocationTaskLogger?.writeOut()
-                    
+                    return
                 case "Delete":
-                    currentPlugin?.sequenceNumber -= 1
                     currentPlugin?.logger?.removeLastRow()
                     currentPlugin?.relocationTaskLogger?.removeLastRow()
+                    currentPlugin?.sequenceNumber -= 1
                 default:
                     DispatchQueue.main.async {
                         if let highlightedNode = self.pluginManager.penScene.drawingNode.childNodes.filter({$0.name == stringCommandData}).first as? ARPenStudyNode{
@@ -1567,7 +1560,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                     }
                 }
             }
-            else if currentPlugin.sceneNumber == 0 {
+            else {
+                currentPlugin.buttonPressesOutsideOfTrial += 1
                 switch currentPlugin.currentMode{
                 case "Base":
                     return
@@ -1860,6 +1854,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
         currentPlugin?.userPosition = "Opposite"
         
+        self.messageLabel.displayMessage("Position changed to opposite.")
+        
         let informationPackage : [String : Any] = ["positionChangeData" : "Opposite"]
         NotificationCenter.default.post(name: .changePositionCommand, object: nil, userInfo: informationPackage)
     }
@@ -1868,6 +1864,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
         currentPlugin?.userPosition = "SideBySide"
         
+        self.messageLabel.displayMessage("Position changed to side-by-side.")
+        
         let informationPackage : [String : Any] = ["positionChangeData" : "SideBySide"]
         NotificationCenter.default.post(name: .changePositionCommand, object: nil, userInfo: informationPackage)
     }
@@ -1875,6 +1873,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
     @IBAction func changeToNinetyDegreePosition(_ sender: UIButton) {
         let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
         currentPlugin?.userPosition = "NinetyDegree"
+        
+        self.messageLabel.displayMessage("Position changed to 90-degree")
         
         let informationPackage : [String : Any] = ["positionChangeData" : "NinetyDegree"]
         NotificationCenter.default.post(name: .changePositionCommand, object: nil, userInfo: informationPackage)
