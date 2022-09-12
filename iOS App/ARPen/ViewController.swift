@@ -536,6 +536,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 self.toggleSharedARHelp.isHidden = false
                 self.settingsButton.isHidden = true
                 self.pluginInstructionsLookupButton.isHidden = true
+                self.menuToggleButton.isHidden = true
+                self.menuView.isHidden = true
 
             }
             if newActivePlugin is SpectatorSharedARPlugin{
@@ -1225,7 +1227,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                     DispatchQueue.main.async {
                         currentPlugin.relocationTask?.toggle()
                         currentPlugin.highlightedNode = nil
+                        if currentPlugin.sequenceNumber == 6{
                         self.messageLabel.displayMessage("Now swap to next setup.")
+                        }
                     }
                 case "Confirm sequence?":
                     DispatchQueue.main.async {
@@ -1335,7 +1339,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                     currentPlugin?.logCurrent()
                 case "ResetCurrentNodeTime":
                     currentPlugin?.resetTimeForCurrentNode()
-                    messageLabel.displayMessage("Please say when you found the cube.", duration: 60)
+                    messageLabel.displayMessage("Please say when you found/memorized the cube and its position.", duration: 60)
                 case "WriteOut":
                     return
                 case "Delete":

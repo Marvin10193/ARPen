@@ -30,7 +30,7 @@ class SpectatorSharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     var logger : CSVLogFile?
     var relocationTaskLogger : CSVLogFile?
     
-    let userID = "2000"
+    let userID = "0"
     
     private var motionManager : CMMotionManager = CMMotionManager()
     var currentMeasurement: DataPoint? = nil

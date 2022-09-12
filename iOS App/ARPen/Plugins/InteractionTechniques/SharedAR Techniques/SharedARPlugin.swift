@@ -28,7 +28,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     
     var logger : CSVLogFile?
     
-    let userID = "2000"
+    let userID = "0"
     
     var userPosition = "Opposite"
     
@@ -42,6 +42,10 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     var layersAsTextures : [CALayer] = []
     
     var currentMeasurement : DataPoint? = nil
+    
+    var jsonSequenceDataForColoring : [ID] = []
+    
+    var tapGesture : UITapGestureRecognizer?
     
     
     
@@ -61,6 +65,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         self.isExperimentalPlugin = true
         
         self.initLayersTextures()
+        self.jsonSequenceDataForColoring = loadJson(filename: "sequenceData")!
         
     }
     
@@ -76,6 +81,9 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         self.currentMode = "Base"
         self.setupScene(sceneNumber: 0)
         
+        self.tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.colorCurrentSequence))
+        self.currentView?.addGestureRecognizer(self.tapGesture!)
+        
         self.pluginManager?.penScene.rootNode.addChildNode((self.pluginManager?.penScene.pencilPoint)!)
 
         
@@ -83,6 +91,10 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     
     override func deactivatePlugin() {
         timer.invalidate()
+        if let tapGestureRecognizer = self.tapGesture{
+            self.currentView?.removeGestureRecognizer(tapGestureRecognizer)
+        }
+        
         super.deactivatePlugin()
     
     }
@@ -208,15 +220,21 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
                 self.sequenceNumber += 1
                 self.objectNumber = 0
                 
-                if self.sequenceNumber < 7{
+                self.sceneConstructionResults?.studyNodes.forEach({
+                    $0.geometry?.firstMaterial?.emission.contents = UIColor.magenta
+                    $0.geometry?.firstMaterial?.emission.intensity = 0
+                })
+                
+                if self.sequenceNumber < 6{
                     let informationPackageDoneMeassuring: [String : Any] = ["labelStringData": "Data Point done, switch task!"]
                     NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackageDoneMeassuring)
                     
                     let informationPackageSwapTask : [String : Any] = ["taskChangeData" : "ChangeTask"]
                     NotificationCenter.default.post(name: .changeTaskMode, object: nil, userInfo: informationPackageSwapTask)
+                    
                     self.relocationTask?.toggle()
                 }
-                else{
+                else if self.sequenceNumber == 6{
                     let informationPackageDoneMeassuring: [String : Any] = ["labelStringData": "One last relocation, then next setting!"]
                     NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackageDoneMeassuring)
                     let informationPackageSwapTask : [String : Any] = ["taskChangeData" : "ChangeTask"]
@@ -354,6 +372,35 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
                     let informationPackage : [String : Any] = ["nodeHighlightData" : "Nil"]
                     NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
                 }
+            }
+        }
+    }
+    
+    @objc func colorCurrentSequence(){
+        var k = 0
+        self.sceneConstructionResults?.studyNodes.forEach({
+            $0.geometry?.firstMaterial?.emission.contents = UIColor.magenta
+            $0.geometry?.firstMaterial?.emission.intensity = 0
+        })
+        if self.sceneNumber == 0 {
+            return
+        }
+        if (self.currentMode == "Base" || self.currentMode == "Ray" || self.currentMode == "Opacity") && self.sequenceNumber < 6{
+            for node in self.jsonSequenceDataForColoring[Int(self.userID)!].scene[self.sceneNumber - 1].sequence[self.sequenceNumber].node{
+                switch k{
+                case 0:
+                    self.sceneConstructionResults?.studyNodes.first(where: {$0.name == node.index.description})?.geometry?.firstMaterial?.emission.contents = UIColor.cyan
+                    self.sceneConstructionResults?.studyNodes.first(where: {$0.name == node.index.description})?.geometry?.firstMaterial?.emission.intensity = 0.4
+                case 1:
+                    self.sceneConstructionResults?.studyNodes.first(where: {$0.name == node.index.description})?.geometry?.firstMaterial?.emission.contents = UIColor.yellow
+                    self.sceneConstructionResults?.studyNodes.first(where: {$0.name == node.index.description})?.geometry?.firstMaterial?.emission.intensity = 0.4
+                case 2:
+                    self.sceneConstructionResults?.studyNodes.first(where: {$0.name == node.index.description})?.geometry?.firstMaterial?.emission.contents = UIColor.green
+                    self.sceneConstructionResults?.studyNodes.first(where: {$0.name == node.index.description})?.geometry?.firstMaterial?.emission.intensity = 0.4
+                default:
+                    return
+                }
+                k += 1
             }
         }
     }
