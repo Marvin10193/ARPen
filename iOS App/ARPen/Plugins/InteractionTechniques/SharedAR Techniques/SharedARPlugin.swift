@@ -25,10 +25,11 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     
     var timer = Timer()
     var currentlyMeasuringANode = false
+    var trialInProgress = false
     
     var logger : CSVLogFile?
     
-    let userID = "0"
+    let userID = "20"
     
     var userPosition = "Opposite"
     
@@ -80,6 +81,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         self.relocationTask = false
         self.currentMode = "Base"
         self.setupScene(sceneNumber: 0)
+        self.checkDuplicate()
         
         self.tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.colorCurrentSequence))
         self.currentView?.addGestureRecognizer(self.tapGesture!)
@@ -166,34 +168,38 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         return (superNode,studyNodes)
         
     }
+    
+    func startTrial(){
+        self.currentMeasurement = DataPoint()
+        self.logger = CSVLogFile(name: "SharedAR_ID" + userID + "_RelocationPresenter", inDirectory: self.documentsDirectory, options: .init())
+        self.logger?.header = "Trial,Mode,UserPosition,Scene,HightlightedNodes,SummedTrialTime,OverallTime,TimeForNode1,TimeForNode2,TimeForNode3,SummedTimeNode1+2"
+        self.timer = Timer.scheduledTimer(timeInterval: (1.0/30.0), target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
+        
+        let startMeasurementInformationPackage : [String : Any] = ["measurementCommandData" : "Start"]
+        NotificationCenter.default.post(name: .measurementCommand, object: nil, userInfo: startMeasurementInformationPackage)
+        
+        self.trialInProgress.toggle()
+        
+        let messageLabelInformationPackage : [String : Any] = ["labelStringData" : "Trial Started!"]
+        NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: messageLabelInformationPackage)
+        
+    }
 
     func onPenClickEnded(at position: SCNVector3, releasedButton: Button) {
-        if !self.relocationTask! && !self.currentlyMeasuringANode && self.highlightedNode != nil {
+        if !self.relocationTask! && !self.currentlyMeasuringANode && self.highlightedNode != nil && self.trialInProgress {
             self.currentMeasurement?.timeForCurrentNode = 0.0
             let resetTimeForCurrentNodeInformationPackage : [String : Any] = ["measurementCommandData" : "ResetCurrentNodeTime"]
             NotificationCenter.default.post(name: .measurementCommand, object: nil, userInfo: resetTimeForCurrentNodeInformationPackage)
             
-            //Start Logging for current object on both devices
-            if objectNumber == 0{
-                let startMeasurementInformationPackage : [String : Any] = ["measurementCommandData" : "Start"]
-                NotificationCenter.default.post(name: .measurementCommand, object: nil, userInfo: startMeasurementInformationPackage)
-                
-                self.currentMeasurement = DataPoint()
-                self.logger = CSVLogFile(name: "SharedAR_ID" + userID + "_RelocationPresenter", inDirectory: self.documentsDirectory, options: .init())
-                self.logger?.header = "Trial,Mode,UserPosition,Scene,HightlightedNodes,SummedTrialTime,OverallTime,TimeForNode1,TimeForNode2,TimeForNode3,SummedTimeNode1+2"
-                self.timer = Timer.scheduledTimer(timeInterval: (1.0/30.0), target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
-            }
-            
             self.currentlyMeasuringANode = true
+            
             //Set Label so I can see its currently running
             let informationPackage : [String : Any] = ["sharedARInfoLabelData": String(currentMode!.prefix(1) + userPosition.prefix(1) + "+")]
             NotificationCenter.default.post(name: .infoLabelCommand, object: nil, userInfo: informationPackage)
-
-            
             self.currentMeasurement!.currentSequence.append(self.highlightedNode!.name!)
             
         }
-        else if !self.relocationTask! && self.currentlyMeasuringANode && self.currentMeasurement!.currentSequence.last == self.highlightedNode?.name! {
+        else if !self.relocationTask! && self.currentlyMeasuringANode && self.currentMeasurement!.currentSequence.last == self.highlightedNode?.name! && self.trialInProgress{
             self.currentlyMeasuringANode = false
             
             self.currentMeasurement!.timeForSingleNode.append(self.currentMeasurement!.timeForCurrentNode)
@@ -427,5 +433,20 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         var summedTimeCurrentNodes : Float = 0.0
         var currentSequence : [String] = []
         var timeForCurrentNode : Float = 0.0
+    }
+    
+    func checkDuplicate(){
+        var joinedArray = [Int]()
+        for i in 0...23{
+            for k in 0...5{
+                for z in 0...2{
+                    joinedArray.append(self.jsonSequenceDataForColoring[i].scene[2].sequence[k].node[z].index)
+                }
+            }
+            print(joinedArray)
+            let dups = Dictionary(grouping: joinedArray, by: {$0}).filter { $1.count > 1}.keys
+            print(dups)
+            joinedArray.removeAll()
+        }
     }
 }

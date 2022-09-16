@@ -78,7 +78,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
     var multipeerSession: MultipeerSession?
     var peerSesssionIDs = [MCPeerID: String]()
     var sessionIDObservation: NSKeyValueObservation?
-    var rayToggledOn = true
+    var rayToggledOn = false
     @IBOutlet weak var messageLabel: MessageLabel!
     var joinedMessageDisplayed: Bool = false
     @IBOutlet weak var pipView: MTKView!
@@ -108,7 +108,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
     @IBOutlet weak var changeTaskButton: UIButton!
     @IBOutlet weak var toggleSharedARHelp: UIButton!
     @IBOutlet weak var toggleSharedARHelpLabel: UILabel!
-
+    @IBOutlet weak var startTrialButton: UIButton!
+    
     
     
     var currentScene = 0
@@ -251,6 +252,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         self.changeTaskButton.isEnabled = true
         
         self.sharedARInfoLabel.isHidden = true
+        
+        self.startTrialButton.isHidden = true
+        self.startTrialButton.isEnabled = true
         
         
         // Create a new scene
@@ -538,10 +542,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 self.pluginInstructionsLookupButton.isHidden = true
                 self.menuToggleButton.isHidden = true
                 self.menuView.isHidden = true
+                self.startTrialButton.isHidden = false
 
             }
             if newActivePlugin is SpectatorSharedARPlugin{
-                self.toggleSharedARHelpLabel.isHidden = false
+                self.toggleSharedARHelpLabel.isHidden = true
                 self.toggleSharedARHelp.isHidden = true
                 self.settingsButton.isHidden = true
                 self.pluginInstructionsLookupButton.isHidden = true
@@ -580,6 +585,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
             self.oppositePositionButton.isHidden = true
             self.changeTaskButton.isHidden = true
             self.toggleSharedARHelpLabel.isHidden = true
+            self.startTrialButton.isHidden = true
         }
         
         
@@ -1227,8 +1233,33 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                     DispatchQueue.main.async {
                         currentPlugin.relocationTask?.toggle()
                         currentPlugin.highlightedNode = nil
+                        currentPlugin.trialInProgress.toggle()
+                        self.startTrialButton.isHidden = false
+                        self.startTrialButton.isHidden = false
+                        self.demoSceneButton.isHidden = false
+                        self.sceneOneButton.isHidden = false
+                        self.sceneTwoButton.isHidden = false
+                        self.sceneThreeButton.isHidden = false
+                        self.sceneFourButton.isHidden = false
+                        self.sceneFiveButton.isHidden = false
+                        self.sceneSixButton.isHidden = false
+                        self.sceneSevenButton.isHidden = false
+                        self.sceneEightButton.isHidden = false
+                        self.sceneNineButton.isHidden = false
+                        self.sceneTenButton.isHidden = false
+                        self.sceneElevenButton.isHidden = false
+                        self.sceneTwelveButton.isHidden = false
+                        self.oppositePositionButton.isHidden = false
+                        self.ninetyDegreePositionButton.isHidden = false
+                        self.sideBySidePositionButton.isHidden = false
+                        self.changeTaskButton.isHidden = false
+                        self.toggleSharedARHelp.isHidden = false
+                        self.raySettingButton.isHidden = false
+                        self.opacitySettingButton.isHidden = false
+                        self.baseSettingButton.isHidden = false
+                        self.videoSettingButton.isHidden = false
                         if currentPlugin.sequenceNumber == 6{
-                        self.messageLabel.displayMessage("Now swap to next setup.")
+                            self.messageLabel.displayMessage("Now swap to next setup.")
                         }
                     }
                 case "Confirm sequence?":
@@ -1271,12 +1302,12 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 switch stringCommandData {
                 case "Base":
                     DispatchQueue.main.async {
-                        self.toggleSharedARHelpLabel.isHidden = false
+                        self.toggleSharedARHelpLabel.isHidden = true
                         self.toggleSharedARHelp.isHidden = true
                         self.pipView.isHidden = true
-                        self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemGreen
-                        self.rayToggledOn = true
-                        currentPlugin?.helpToggled = true
+                        self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemRed
+                        self.rayToggledOn = false
+                        currentPlugin?.helpToggled = false
                         currentPlugin?.currentMode = stringCommandData
                         currentPlugin?.setupScene(sceneNumber: self.currentScene)
                     }
@@ -1285,9 +1316,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                         self.toggleSharedARHelpLabel.isHidden = false
                         self.toggleSharedARHelp.isHidden = false
                         self.pipView.isHidden = true
-                        self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemGreen
-                        self.rayToggledOn = true
-                        currentPlugin?.helpToggled = true
+                        self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemRed
+                        self.rayToggledOn = false
+                        currentPlugin?.helpToggled = false
                         currentPlugin?.currentMode = stringCommandData
                         currentPlugin?.setupScene(sceneNumber: self.currentScene)
                     }
@@ -1295,10 +1326,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                     DispatchQueue.main.async {
                         self.toggleSharedARHelpLabel.isHidden = false
                         self.toggleSharedARHelp.isHidden = false
-                        self.pipView.isHidden = false
-                        self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemGreen
-                        self.rayToggledOn = true
-                        currentPlugin?.helpToggled = true
+                        self.pipView.isHidden = true
+                        self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemRed
+                        self.rayToggledOn = false
+                        currentPlugin?.helpToggled = false
                         currentPlugin?.currentMode = stringCommandData
                         currentPlugin?.setupScene(sceneNumber: self.currentScene)
                     }
@@ -1324,6 +1355,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                         self.pipView.isHidden = true
                         if currentPlugin?.relocationTask! == true {
                             self.toggleSharedARHelp.isHidden = true
+                            self.toggleSharedARHelpLabel.isHidden = true
                             currentPlugin?.pluginManager?.penScene.drawingNode.childNodes.first(where: {$0.name == "renderedRay"})?.removeFromParentNode()
                             let alertController = UIAlertController(title: "Start Relocation Task", message: nil, preferredStyle: .alert)
                             let defaultAlertAction = UIAlertAction(title: "START!", style: .default, handler: {action in currentPlugin?.startDeviceUpdate()})
@@ -1333,6 +1365,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                     }
                 case "Start":
                     DispatchQueue.main.async {
+                        self.toggleSharedARHelpLabel.backgroundColor = UIColor.red
+                        self.rayToggledOn = false
+                        currentPlugin?.helpToggled = false
+                        self.pipView.isHidden = true
                         currentPlugin?.startDeviceUpdate()
                     }
                 case "Log":
@@ -1413,7 +1449,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
             }
         case .labelCommand:
             let receivedLabelString = userInfo["labelStringData"] as! String
-            messageLabel.displayMessage(receivedLabelString,duration: 6)
+            messageLabel.displayMessage(receivedLabelString,duration: 2)
         case .nodeCommand:
             let receivedNodeCommand = userInfo["nodeHighlightData"] as? String
             if !(multipeerSession?.connectedPeers.isEmpty)!{
@@ -1452,8 +1488,12 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
             }
         case .changeTaskMode:
             let receivedTaskChange = userInfo["taskChangeData"] as? String
-            if self.pluginManager.activePlugin is SpectatorSharedARPlugin {
+            if self.pluginManager.activePlugin is SpectatorSharedARPlugin && (self.pluginManager.activePlugin as! SpectatorSharedARPlugin).currentMode != "Base" {
                 self.toggleSharedARHelp.isHidden = false
+                self.toggleSharedARHelpLabel.isHidden = false
+                self.rayToggledOn = false
+                (self.pluginManager.activePlugin as! SpectatorSharedARPlugin).helpToggled = false
+                self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemRed
             }
             if !(multipeerSession?.connectedPeers.isEmpty)!{
                 guard let encodedTaskChangeData = try? JSONEncoder().encode(receivedTaskChange) else{
@@ -1892,6 +1932,37 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         NotificationCenter.default.post(name: .changeTaskMode, object: nil, userInfo: informationPackage)
     }
     
+    @IBAction func startTrial(_ sender: UIButton) {
+        let currentPlugin = pluginManager.activePlugin as! SharedARPlugin
+        if !(self.multipeerSession?.connectedPeers.isEmpty)!{
+            self.startTrialButton.isHidden = true
+            self.demoSceneButton.isHidden = true
+            self.sceneOneButton.isHidden = true
+            self.sceneTwoButton.isHidden = true
+            self.sceneThreeButton.isHidden = true
+            self.sceneFourButton.isHidden = true
+            self.sceneFiveButton.isHidden = true
+            self.sceneSixButton.isHidden = true
+            self.sceneSevenButton.isHidden = true
+            self.sceneEightButton.isHidden = true
+            self.sceneNineButton.isHidden = true
+            self.sceneTenButton.isHidden = true
+            self.sceneElevenButton.isHidden = true
+            self.sceneTwelveButton.isHidden = true
+            self.oppositePositionButton.isHidden = true
+            self.ninetyDegreePositionButton.isHidden = true
+            self.sideBySidePositionButton.isHidden = true
+            self.changeTaskButton.isHidden = true
+            self.toggleSharedARHelp.isHidden = true
+            self.raySettingButton.isHidden = true
+            self.opacitySettingButton.isHidden = true
+            self.baseSettingButton.isHidden = true
+            self.videoSettingButton.isHidden = true
+            
+            currentPlugin.startTrial()
+            
+        }
+    }
     
     
     // MARK: - Share ARWorldMap with other users
