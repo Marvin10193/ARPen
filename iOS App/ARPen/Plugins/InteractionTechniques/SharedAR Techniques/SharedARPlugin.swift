@@ -51,6 +51,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     
     
     
+    
     override init(){
         self.relocationTask = false
         self.currentMode = "Base"
@@ -81,7 +82,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         self.relocationTask = false
         self.currentMode = "Base"
         self.setupScene(sceneNumber: 0)
-        self.checkDuplicate()
+        //self.checkDuplicate()
         
         self.tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.colorCurrentSequence))
         self.currentView?.addGestureRecognizer(self.tapGesture!)
@@ -437,16 +438,18 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     
     func checkDuplicate(){
         var joinedArray = [Int]()
-        for i in 0...23{
+        for j in 4...23{
+        for i in 0...11{
             for k in 0...5{
                 for z in 0...2{
-                    joinedArray.append(self.jsonSequenceDataForColoring[i].scene[2].sequence[k].node[z].index)
+                    joinedArray.append(self.jsonSequenceDataForColoring[j].scene[i].sequence[k].node[z].index)
                 }
             }
-            print(joinedArray)
+            print(joinedArray.chunked(into: 3))
             let dups = Dictionary(grouping: joinedArray, by: {$0}).filter { $1.count > 1}.keys
-            print(dups)
             joinedArray.removeAll()
+        }
+            print(" ")
         }
     }
 }

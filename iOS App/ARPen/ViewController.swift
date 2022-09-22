@@ -536,8 +536,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 self.sideBySidePositionButton.isHidden = false
                 self.ninetyDegreePositionButton.isHidden = false
                 self.oppositePositionButton.isHidden = false
-                self.changeTaskButton.isHidden = false
-                self.toggleSharedARHelp.isHidden = false
+                //self.changeTaskButton.isHidden = false
+               // self.toggleSharedARHelp.isHidden = false
                 self.settingsButton.isHidden = true
                 self.pluginInstructionsLookupButton.isHidden = true
                 self.menuToggleButton.isHidden = true
@@ -557,7 +557,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         } else {
             self.undoButton.isHidden = false
             self.redoButton.isHidden = false
-            self.toggleSharedARHelp.isHidden = false
+            self.toggleSharedARHelp.isHidden = true
             
             self.raySettingButton.isHidden = true
             self.opacitySettingButton.isHidden = true
@@ -1252,8 +1252,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                         self.oppositePositionButton.isHidden = false
                         self.ninetyDegreePositionButton.isHidden = false
                         self.sideBySidePositionButton.isHidden = false
-                        self.changeTaskButton.isHidden = false
-                        self.toggleSharedARHelp.isHidden = false
+                        //self.changeTaskButton.isHidden = false
+                       // self.toggleSharedARHelp.isHidden = false
                         self.raySettingButton.isHidden = false
                         self.opacitySettingButton.isHidden = false
                         self.baseSettingButton.isHidden = false
@@ -1313,8 +1313,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                     }
                 case "Ray","Opacity":
                     DispatchQueue.main.async{
-                        self.toggleSharedARHelpLabel.isHidden = false
-                        self.toggleSharedARHelp.isHidden = false
+                        self.toggleSharedARHelpLabel.isHidden = true
+                        self.toggleSharedARHelp.isHidden = true
                         self.pipView.isHidden = true
                         self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemRed
                         self.rayToggledOn = false
@@ -1324,8 +1324,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                     }
                 case "Video":
                     DispatchQueue.main.async {
-                        self.toggleSharedARHelpLabel.isHidden = false
-                        self.toggleSharedARHelp.isHidden = false
+                        self.toggleSharedARHelpLabel.isHidden = true
+                        self.toggleSharedARHelp.isHidden = true
                         self.pipView.isHidden = true
                         self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemRed
                         self.rayToggledOn = false
@@ -1366,9 +1366,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 case "Start":
                     DispatchQueue.main.async {
                         self.toggleSharedARHelpLabel.backgroundColor = UIColor.red
+                        if currentPlugin?.currentMode != "Base"{
+                            self.toggleSharedARHelp.isHidden = false
+                            self.toggleSharedARHelpLabel.isHidden = false
+                        }
                         self.rayToggledOn = false
                         currentPlugin?.helpToggled = false
                         self.pipView.isHidden = true
+                        self.messageLabel.displayMessage("\(currentPlugin?.currentMode) trial started",duration: 2.5)
                         currentPlugin?.startDeviceUpdate()
                     }
                 case "Log":
@@ -1489,8 +1494,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         case .changeTaskMode:
             let receivedTaskChange = userInfo["taskChangeData"] as? String
             if self.pluginManager.activePlugin is SpectatorSharedARPlugin && (self.pluginManager.activePlugin as! SpectatorSharedARPlugin).currentMode != "Base" {
-                self.toggleSharedARHelp.isHidden = false
-                self.toggleSharedARHelpLabel.isHidden = false
+                self.toggleSharedARHelp.isHidden = true
+                self.toggleSharedARHelpLabel.isHidden = true
                 self.rayToggledOn = false
                 (self.pluginManager.activePlugin as! SpectatorSharedARPlugin).helpToggled = false
                 self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemRed
@@ -1694,6 +1699,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
             currentPlugin?.setupScene(sceneNumber: currentScene)
             let informationPackage : [String : Any] = ["modeChangeData": "Base"]
             NotificationCenter.default.post(name: .changeModeCommand, object: nil, userInfo: informationPackage)
+            self.messageLabel.displayMessage("Mode changed to Base", duration: 2)
         }
     }
     
@@ -1714,6 +1720,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
             
             let informationPackage : [String : Any] = ["modeChangeData": "Opacity"]
             NotificationCenter.default.post(name: .changeModeCommand, object: nil, userInfo: informationPackage)
+            self.messageLabel.displayMessage("Mode changed to Opacity", duration: 2)
             
         }
     }
@@ -1735,6 +1742,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
             currentPlugin?.setupScene(sceneNumber: currentScene)
             let informationPackage : [String : Any] = ["modeChangeData": "Ray"]
             NotificationCenter.default.post(name: .changeModeCommand, object: nil, userInfo: informationPackage)
+            self.messageLabel.displayMessage("Mode changed to Ray", duration: 2)
         }
 
     }
@@ -1746,6 +1754,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
             currentPlugin?.setupScene(sceneNumber: currentScene)
             let informationPackage : [String : Any] = ["modeChangeData": "Video"]
             NotificationCenter.default.post(name: .changeModeCommand, object: nil, userInfo: informationPackage)
+            self.messageLabel.displayMessage("Mode changed to Video", duration: 2)
         }
     
         
@@ -1778,6 +1787,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
         currentPlugin?.setupScene(sceneNumber: 0)
         self.currentScene = 0
+        self.messageLabel.displayMessage("Scene changed to Demo", duration: 2)
         
         let informationPackage : [String : Any] = ["sceneChangeData" : "Demo"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
@@ -1787,6 +1797,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
         currentPlugin?.setupScene(sceneNumber: 1)
         self.currentScene = 1
+        self.messageLabel.displayMessage("Scene changed to 1", duration: 2)
         
         let informationPackage : [String : Any] = ["sceneChangeData" : "Scene1"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
@@ -1796,6 +1807,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
         currentPlugin?.setupScene(sceneNumber: 2)
         self.currentScene = 2
+        self.messageLabel.displayMessage("Scene changed to 2", duration: 2)
         
         let informationPackage : [String : Any] = ["sceneChangeData" : "Scene2"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
@@ -1805,6 +1817,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
         currentPlugin?.setupScene(sceneNumber: 3)
         self.currentScene = 3
+        self.messageLabel.displayMessage("Scene changed to 3", duration: 2)
         
         let informationPackage : [String : Any] = ["sceneChangeData" : "Scene3"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
@@ -1814,6 +1827,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
         currentPlugin?.setupScene(sceneNumber: 4)
         self.currentScene = 4
+        self.messageLabel.displayMessage("Scene changed to 4", duration: 2)
         
         let informationPackage : [String : Any] = ["sceneChangeData" : "Scene4"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
@@ -1824,6 +1838,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
         currentPlugin?.setupScene(sceneNumber: 5)
         self.currentScene = 5
+        self.messageLabel.displayMessage("Scene changed to 5", duration: 2)
         
         let informationPackage : [String : Any] = ["sceneChangeData" : "Scene5"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
@@ -1833,6 +1848,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
         currentPlugin?.setupScene(sceneNumber: 6)
         self.currentScene = 6
+        self.messageLabel.displayMessage("Scene changed to 6", duration: 2)
         
         let informationPackage : [String : Any] = ["sceneChangeData" : "Scene6"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
@@ -1842,6 +1858,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
         currentPlugin?.setupScene(sceneNumber: 7)
         self.currentScene = 7
+        self.messageLabel.displayMessage("Scene changed to 7", duration: 2)
         
         let informationPackage : [String : Any] = ["sceneChangeData" : "Scene7"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
@@ -1851,6 +1868,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
         currentPlugin?.setupScene(sceneNumber: 8)
         self.currentScene = 8
+        self.messageLabel.displayMessage("Scene changed to 8", duration: 2)
         
         let informationPackage : [String : Any] = ["sceneChangeData" : "Scene8"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
@@ -1860,6 +1878,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
         currentPlugin?.setupScene(sceneNumber: 9)
         self.currentScene = 9
+        self.messageLabel.displayMessage("Scene changed to 9", duration: 2)
         
         let informationPackage : [String : Any] = ["sceneChangeData" : "Scene9"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
@@ -1869,6 +1888,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
         currentPlugin?.setupScene(sceneNumber: 10)
         self.currentScene = 10
+        self.messageLabel.displayMessage("Scene changed to 10", duration: 2)
         
         let informationPackage : [String : Any] = ["sceneChangeData" : "Scene10"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
@@ -1878,6 +1898,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
         currentPlugin?.setupScene(sceneNumber: 11)
         self.currentScene = 11
+        self.messageLabel.displayMessage("Scene changed to 11", duration: 2)
         
         let informationPackage : [String : Any] = ["sceneChangeData" : "Scene11"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
@@ -1887,6 +1908,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
         currentPlugin?.setupScene(sceneNumber: 12)
         self.currentScene = 12
+        self.messageLabel.displayMessage("Scene changed to 12", duration: 2)
         
         let informationPackage : [String : Any] = ["sceneChangeData" : "Scene12"]
         NotificationCenter.default.post(name: .changeSceneCommand, object: nil, userInfo: informationPackage)
