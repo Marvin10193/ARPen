@@ -15,6 +15,7 @@ class ARPenStudyNode : SelectableNode {
     //initial position to return to, when move completed correctly
     let originalPosition : SCNVector3
     
+    //Increaed intensisty form 0.5 to 1.0 for the ShARePen study.
     var highlighted : Bool = false {
         didSet {
             if highlighted {

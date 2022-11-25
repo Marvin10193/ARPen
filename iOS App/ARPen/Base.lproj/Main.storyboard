@@ -324,7 +324,7 @@
                                     <action selector="changeToSceneFour:" destination="BV1-FR-VrT" eventType="touchDown" id="eLx-wq-Uff"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iAM-wo-qeI">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iAM-wo-qeI">
                                 <rect key="frame" x="797" y="146" width="45" height="45"/>
                                 <color key="backgroundColor" red="0.67518979710000004" green="0.67094332040000004" blue="0.67943627380000005" alpha="0.87877338439999997" colorSpace="custom" customColorSpace="displayP3"/>
                                 <constraints>
@@ -375,20 +375,6 @@
                                 <state key="normal" title="90D"/>
                                 <connections>
                                     <action selector="changeToNinetyDegreePosition:" destination="BV1-FR-VrT" eventType="touchDown" id="j1A-Mi-CvI"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="PZa-jS-Wew">
-                                <rect key="frame" x="804" y="101" width="38" height="38"/>
-                                <color key="backgroundColor" red="0.78799253700000005" green="0.25793972609999999" blue="0.8396994472" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="38" id="8nn-9j-xvN"/>
-                                    <constraint firstAttribute="width" constant="38" id="WOw-eD-Nqc"/>
-                                </constraints>
-                                <color key="tintColor" red="0.93601793050000004" green="0.93844312429999999" blue="0.95714658500000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
-                                <state key="normal" title="Task"/>
-                                <connections>
-                                    <action selector="changeTask:" destination="BV1-FR-VrT" eventType="touchDown" id="eGl-Lg-9s3"/>
                                 </connections>
                             </button>
                             <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dHC-ym-Tym">
@@ -575,7 +561,6 @@
                             <constraint firstItem="A5z-U4-mJN" firstAttribute="centerX" secondItem="4Gi-6V-ula" secondAttribute="centerX" constant="49" id="Kpd-0d-iKX"/>
                             <constraint firstItem="IjW-qQ-LcS" firstAttribute="trailing" secondItem="Lto-qb-81x" secondAttribute="trailing" constant="-30" id="Kxz-k8-H44"/>
                             <constraint firstItem="Q1z-Cm-bHw" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="7vt-XS-Ox1" secondAttribute="leading" id="Ky8-bA-NBB"/>
-                            <constraint firstItem="iAM-wo-qeI" firstAttribute="top" secondItem="PZa-jS-Wew" secondAttribute="top" constant="45" id="KzI-ez-xKN"/>
                             <constraint firstItem="Z1i-B5-dqO" firstAttribute="top" secondItem="YSQ-pH-N6L" secondAttribute="top" id="LBk-3V-d3Y"/>
                             <constraint firstItem="bfK-M3-ibJ" firstAttribute="centerY" secondItem="7vt-XS-Ox1" secondAttribute="centerY" id="LW9-h6-5hl"/>
                             <constraint firstItem="vKU-2l-six" firstAttribute="top" secondItem="EIQ-Ip-Tyt" secondAttribute="top" constant="58" id="Lye-aX-OE3"/>
@@ -629,13 +614,10 @@
                             <constraint firstItem="fdu-w5-6Bb" firstAttribute="trailing" secondItem="HjX-7o-lFy" secondAttribute="trailing" constant="-30" id="imj-k2-qfZ"/>
                             <constraint firstItem="IjW-qQ-LcS" firstAttribute="top" secondItem="HjX-7o-lFy" secondAttribute="top" id="jxu-O2-rW3"/>
                             <constraint firstItem="HVv-SR-ngJ" firstAttribute="trailing" secondItem="Lz6-mU-aY1" secondAttribute="trailing" constant="40" id="k4z-1i-Dnh"/>
-                            <constraint firstItem="iAM-wo-qeI" firstAttribute="trailing" secondItem="PZa-jS-Wew" secondAttribute="trailing" id="kig-lG-eew"/>
                             <constraint firstItem="h1V-HR-2WE" firstAttribute="centerX" secondItem="0DW-gH-vc2" secondAttribute="centerX" id="lDS-Rd-B32"/>
                             <constraint firstItem="s9l-uD-5MF" firstAttribute="leading" secondItem="7vt-XS-Ox1" secondAttribute="trailing" constant="10" id="mli-cg-MTZ"/>
                             <constraint firstItem="Q1z-Cm-bHw" firstAttribute="trailing" secondItem="GLJ-9W-09V" secondAttribute="trailing" id="mul-IY-1UI"/>
                             <constraint firstItem="vmi-gy-u24" firstAttribute="trailing" secondItem="LQM-tQ-60U" secondAttribute="trailing" id="nCt-uV-JZH"/>
-                            <constraint firstItem="4Mk-rY-wF9" firstAttribute="top" secondItem="PZa-jS-Wew" secondAttribute="top" constant="-45" id="nyN-2Y-qDU"/>
-                            <constraint firstItem="dHC-ym-Tym" firstAttribute="trailing" secondItem="PZa-jS-Wew" secondAttribute="trailing" id="pVH-4M-1DJ"/>
                             <constraint firstItem="0DW-gH-vc2" firstAttribute="top" secondItem="h1V-HR-2WE" secondAttribute="bottom" constant="8" id="prO-aN-lxA"/>
                             <constraint firstItem="h1V-HR-2WE" firstAttribute="height" secondItem="0DW-gH-vc2" secondAttribute="height" id="r8e-0l-s3G"/>
                             <constraint firstItem="E3L-x2-chr" firstAttribute="leading" secondItem="4Gi-6V-ula" secondAttribute="leading" constant="49" id="rBw-Hf-jz4"/>
@@ -652,7 +634,6 @@
                     <connections>
                         <outlet property="arSceneView" destination="Z1i-B5-dqO" id="iVk-um-itv"/>
                         <outlet property="baseSettingButton" destination="Lz6-mU-aY1" id="2DR-k5-VNu"/>
-                        <outlet property="changeTaskButton" destination="PZa-jS-Wew" id="h4g-sB-hgL"/>
                         <outlet property="demoSceneButton" destination="IjW-qQ-LcS" id="Lrf-xn-chl"/>
                         <outlet property="imageForPluginInstructions" destination="vKU-2l-six" id="TeH-Xx-Mba"/>
                         <outlet property="loadModelButton" destination="kra-NZ-pmu" id="yTx-DB-1GC"/>

@@ -306,9 +306,6 @@ class StudyPlugin: Plugin, PenDelegate, TouchDelegate, SelectionDelegate, UserSt
             arMenu = (node as! SelectableNode).openContextMenu()
             didWeJustOpenedAMenu = true
             measureOnMenuOpened()
-          // let newNode = SCNNode()
-           // newNode.buildLineInTwoPointsWithRotation(from: (self.pluginManager?.penScene.pencilPoint.position)!, to: target!.node.worldPosition, radius: 0.001, color: .red)
-           // self.pluginManager?.penScene.drawingNode.addChildNode(newNode)
         }
         else if self.arMenu != nil {
             MenuManager.shared.closeMenu()
@@ -409,7 +406,6 @@ class StudyPlugin: Plugin, PenDelegate, TouchDelegate, SelectionDelegate, UserSt
         }
     }
     
-    // LOOOK HERE MARVIN!!!!!!!!
 
     func onPenClickStarted(at position: SCNVector3, startedButton: Button) {}
     func onPenClickEnded(at position: SCNVector3, releasedButton: Button) {}

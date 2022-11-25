@@ -1,6 +1,8 @@
 /*
 Taken from the ShareARExperience Demo by Apple
-
+Matrices not explicitly used in this App
+ 
+ 
 Abstract:
 VideoFrameData contains the essential data from a CMSampleBuffer in a form that you can easily serialize for sending over a network.
 */

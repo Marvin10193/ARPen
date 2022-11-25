@@ -5,6 +5,8 @@
 //  Created by Marvin Bruna on 13.05.22.
 //  Copyright © 2022 RWTH Aachen. All rights reserved.
 //
+// Used to display important notfications to the Spectator and Presenter which disappear after a set amount of time.
+
 
 import UIKit
 

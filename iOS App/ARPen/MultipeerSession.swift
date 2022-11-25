@@ -1,5 +1,4 @@
 /*
-See LICENSE folder for this sample’s licensing information.
 
 Abstract:
 A simple abstraction of the MultipeerConnectivity API as used in this app.
@@ -9,7 +8,7 @@ import MultipeerConnectivity
 
 /// - Tag: MultipeerSession
 class MultipeerSession: NSObject {
-    static let serviceType = "arpen-shared"
+    static let serviceType = "arpen-shared" //THIS NEEDS TO BE SET IN THE PLIST UNDER BONJOUR SERVICES!!!!!!!!!!!!!!!
     
     private let myPeerID = MCPeerID(displayName: UIDevice.current.name)
     private var session: MCSession!

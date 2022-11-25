@@ -83,9 +83,10 @@ class CylinderByDraggingPlugin: Plugin {
                 //update cylinder position for ARPCylinder
                 finalCylinderPosition = cylinderNode.position
                 
-                //Data for potential sharing
+                //Early tested sharing process
+                /*
                 let informationPackage: [String:Any] = ["nodeData": cylinderNode]
-                NotificationCenter.default.post(name: .shareSCNNodeData, object: nil, userInfo: informationPackage)
+                NotificationCenter.default.post(name: .shareSCNNodeData, object: nil, userInfo: informationPackage)*/
                 
             } else {
                 //if the button is pressed but no startingPoint exists -> first frame with the button pressed. Set current pencil position as the start point
@@ -111,11 +112,12 @@ class CylinderByDraggingPlugin: Plugin {
                     cylinder.localTranslate(by: self.finalCylinderPosition!)
                     cylinder.applyTransform()
                     
-                    // ARPNodeData for potential sharing
+                    // Early sharing that was tested for ARPData
+                    /*
                     let arpNodeData = ARPNodeData(pluginName: "Cylinder",radius: self.finalCylinderRadius!, positon: self.finalCylinderPosition!,height: self.finalCylinderHeight!)
                     cylinder.geometryColor.getHue(&arpNodeData.hue!, saturation: &arpNodeData.saturation, brightness: &arpNodeData.brightness, alpha: &arpNodeData.alpha)
                     let informationPackage: [String:Any] = ["arpNodeData":arpNodeData]
-                    NotificationCenter.default.post(name: .shareARPNodeData, object: nil, userInfo: informationPackage)
+                    NotificationCenter.default.post(name: .shareARPNodeData, object: nil, userInfo: informationPackage)*/
                     
                     let buildingAction = PrimitiveBuildingAction(occtRef: cylinder.occtReference!, scene: self.currentScene!, cylinder: cylinder)
                     self.undoRedoManager?.actionDone(buildingAction)

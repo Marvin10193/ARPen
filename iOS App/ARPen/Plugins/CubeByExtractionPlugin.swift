@@ -87,9 +87,9 @@ class CubeByExtractionPlugin: Plugin,UserStudyRecordPluginProtocol {
                 self.finalCenterX = boxCenterXPosition
                 self.finalCenterZ = boxCenterZPosition
                 
-                // Data for the NotificationCenter that shares data if possible
-                let informationPackage: [String: Any] = ["nodeData": boxNode]
-                NotificationCenter.default.post(name: .shareSCNNodeData, object: nil, userInfo: informationPackage)
+                // Sharing used for testing purposes in early stages.
+               /* let informationPackage: [String: Any] = ["nodeData": boxNode]
+                NotificationCenter.default.post(name: .shareSCNNodeData, object: nil, userInfo: informationPackage)*/
                 
                 
             } else {
@@ -164,11 +164,12 @@ class CubeByExtractionPlugin: Plugin,UserStudyRecordPluginProtocol {
         box.localTranslate(by: SCNVector3(self.finalCenterX!, self.finalCenterY!, self.finalCenterZ!))
         box.applyTransform()
         
-        // ARPNodeData for potential sharing
+        // Sharing, not used in final thesis, tested in early stages.
+        /*
         let arpNodeData = ARPNodeData(pluginName: "CubeExtraction", positon: SCNVector3(self.finalCenterX!,self.finalCenterY!,self.finalCenterZ!), width: self.finalBoxWidth!, height: self.finalBoxHeight!, length: self.finalBoxLength!)
         box.geometryColor.getHue(&arpNodeData.hue!, saturation: &arpNodeData.saturation, brightness: &arpNodeData.brightness, alpha: &arpNodeData.alpha)
         let informationPackage: [String:Any] = ["arpNodeData": arpNodeData]
-        NotificationCenter.default.post(name: .shareARPNodeData, object: nil, userInfo: informationPackage)
+        NotificationCenter.default.post(name: .shareARPNodeData, object: nil, userInfo: informationPackage)*/
         
         
         let buildingAction = PrimitiveBuildingAction(occtRef: box.occtReference!, scene: self.currentScene!, box: box)

@@ -99,9 +99,10 @@ class PyramidByDraggingPlugin: Plugin {
                 self.finalPyramidCenter = centerPosition
                 self.finalPyramidMin = min
                 
-                //Data for potential sharing
+                //Tested sharing in early stages
+                /*
                 let informationPackage : [String:Any] = ["nodeData": pyramidNode]
-                NotificationCenter.default.post(name: .shareSCNNodeData, object: nil, userInfo: informationPackage)
+                NotificationCenter.default.post(name: .shareSCNNodeData, object: nil, userInfo: informationPackage)*/
                 
             } else {
                 //if the button is pressed but no startingPoint exists -> first frame with the button pressed. Set current pencil position as the start point
@@ -130,11 +131,12 @@ class PyramidByDraggingPlugin: Plugin {
                     pyramid.position = finalPyramidMin!
                     pyramid.applyTransform()
                     
-                    // ARPNodeData for potential sharing
+                    // Sharing tested in early stages
+                    /*
                     let arpNodeData = ARPNodeData(pluginName: "Pyramid", positon: self.finalPyramidMin!, width: self.finalPyramidWidth!, height: self.finalPyramidHeight!, length: self.finalPyramidLength!)
                     pyramid.geometryColor.getHue(&arpNodeData.hue!, saturation: &arpNodeData.saturation, brightness: &arpNodeData.brightness, alpha: &arpNodeData.alpha)
                     let informationPackage: [String:Any] = ["arpNodeData":arpNodeData]
-                    NotificationCenter.default.post(name: .shareARPNodeData, object: nil, userInfo: informationPackage)
+                    NotificationCenter.default.post(name: .shareARPNodeData, object: nil, userInfo: informationPackage)*/
                     
                     
                     let buildingAction = PrimitiveBuildingAction(occtRef: pyramid.occtReference!, scene: self.currentScene!, pyramid: pyramid)

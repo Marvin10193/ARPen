@@ -95,9 +95,10 @@ class CubeByDraggingPlugin: Plugin {
                 self.finalBoxHeight = Double(boxHeight)
                 self.finalBoxLength = Double(boxLength)
                 
-                //notify notification center to potentially share this node
+                //Sharing of the SCNNode, only used in early stages for testing purposes.
+                /*
                 let informationPackage : [String: Any] = ["nodeData" : boxNode]
-                NotificationCenter.default.post(name: .shareSCNNodeData, object: nil,userInfo: informationPackage)
+                NotificationCenter.default.post(name: .shareSCNNodeData, object: nil,userInfo: informationPackage)*/
             }
             
             else {
@@ -133,26 +134,12 @@ class CubeByDraggingPlugin: Plugin {
                         box.localTranslate(by: self.finalBoxCenterPos!)
                         box.applyTransform()
                         
-                        // Notification to potentially share the finished Cube
+                        //Sharing of the final cube, could be used in the future. Commented out, as it wasnt used in the thesis.
+                        /*
                         let arpNodeData = ARPNodeData(pluginName: "Cube", positon: self.finalBoxCenterPos!, width: self.finalBoxWidth!, height: self.finalBoxHeight!, length: self.finalBoxHeight)
                         box.geometryColor.getHue(&arpNodeData.hue! , saturation: &arpNodeData.saturation, brightness: &arpNodeData.brightness, alpha: &arpNodeData.alpha)
                         let informationPackage : [String: Any] = ["arpNodeData": arpNodeData]
-                        NotificationCenter.default.post(name: .shareARPNodeData, object: nil, userInfo: informationPackage)
-                        
-                       
-                        /*
-                        print(box.geometryColor)
-                        var hue: CGFloat = 0
-                        var satu: CGFloat = 0
-                        var bright: CGFloat = 0
-                        var alpha: CGFloat = 0
-                        box.geometryColor.getHue(&hue, saturation: &satu, brightness: &bright, alpha: &alpha)
-                        print("Hue: \(hue), Satu:\(satu), Bright:\(bright), Alpha: \(alpha)")
-                        print(arpNodeData.hue)
-                        print(arpNodeData.saturation)
-                        print(arpNodeData.brightness)
-                        print(arpNodeData.alpha)*/
-                        
+                        NotificationCenter.default.post(name: .shareARPNodeData, object: nil, userInfo: informationPackage)*/
                         
                         let buildingAction = PrimitiveBuildingAction(occtRef: box.occtReference!, scene: self.currentScene!, box: box)
                         self.undoRedoManager?.actionDone(buildingAction)

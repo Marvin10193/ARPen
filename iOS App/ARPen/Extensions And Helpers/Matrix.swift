@@ -1,5 +1,7 @@
 /*
 Taken from the ShareARExperience Demo by Apple
+ Matrix representation used in the ARStreaming part for the projection and inverseprojection matrix, even though they were not explictly used.
+ 
 Abstract:
 A representation of a matrix in a form that you can easily serialize for sending over a network.
 */

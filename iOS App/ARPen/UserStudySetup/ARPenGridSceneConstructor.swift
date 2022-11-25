@@ -44,6 +44,7 @@ struct ARPenGridSceneConstructor : ARPenSceneConstructor {
             
             y = 0.25
             
+            //Changed this such that we have one more cube in this dimension, original was Int(cubesPerDimension/2)
             for _ in 0...Int(cubesPerDimension/2 + 1) {
                 
                 z = -0.25
@@ -66,27 +67,21 @@ struct ARPenGridSceneConstructor : ARPenSceneConstructor {
                     arPenStudyNode = studyNodeClass.init(withPosition: SCNVector3Make(Float(x + xPositionOffset), Float(y + yPositionOffset), Float(z + zPositionOffset)), andDimension: Float(dimensionOfBox))
                     studyNodes.append(arPenStudyNode)
                     
+                    //lowered original value from 0.1 to 0.09 to keep cubes closer together, creating a more dense scene with more potential occlusion
                     z += 0.09
                     
                 }
-                
+                //lowered original value from 0.1 to 0.09 to keep cubes closer together, creating a more dense scene with more potential occlusion
                 y += 0.09
                 
             }
-            
+            //lowered original value from 0.1 to 0.09 to keep cubes closer together, creating a more dense scene with more potential occlusion
             x += 0.09
             
         }
         
-        
         studyNodes.shuffle()
-       // let result = studyNodes.chunked(into: 32)
-      //  result[0].forEach({superNode.addChildNode($0)})
         studyNodes.forEach({superNode.addChildNode($0)})
-        
-        
-        
-        
         
         return (superNode, studyNodes)
     }

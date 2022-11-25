@@ -75,12 +75,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
     let userStudyRecordManager = UserStudyRecordManager() // Manager for storing data from user studies
     
     //Everything used in the shared session and functionality handling
-    var multipeerSession: MultipeerSession?
-    var peerSesssionIDs = [MCPeerID: String]()
+    var multipeerSession: MultipeerSession? // THE MultipeerSession Variable
+    var peerSesssionIDs = [MCPeerID: String]() // Tracking sessionIds
     var sessionIDObservation: NSKeyValueObservation?
-    var rayToggledOn = false
-    @IBOutlet weak var messageLabel: MessageLabel!
+    var rayToggledOn = false //Is the ray currently rendered or not
+    @IBOutlet weak var messageLabel: MessageLabel! //message label used to display all kinds of information
     var joinedMessageDisplayed: Bool = false
+    
+    //All UI ELEMENTS FOR THE SHAREDARPLUGIN AND SPECTATORSHAREDARPLUGIN!!!
     @IBOutlet weak var pipView: MTKView!
     @IBOutlet weak var pipViewHeightConstraint: NSLayoutConstraint!
     @IBOutlet weak var pipViewWidthConstraint: NSLayoutConstraint!
@@ -105,24 +107,20 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
     @IBOutlet weak var oppositePositionButton: UIButton!
     @IBOutlet weak var sideBySidePositionButton: UIButton!
     @IBOutlet weak var ninetyDegreePositionButton: UIButton!
-    @IBOutlet weak var changeTaskButton: UIButton!
     @IBOutlet weak var toggleSharedARHelp: UIButton!
     @IBOutlet weak var toggleSharedARHelpLabel: UILabel!
     @IBOutlet weak var startTrialButton: UIButton!
     
     
-    
+    //Ugly way of storing the current scene, we could just fetch it from the active plugin.
     var currentScene = 0
+    
     
     let videoProcessor = VideoProcessor()
     var videoRenderer: Renderer!
     var lastTrackingState: Bool = false
-    var latestKnownWorldTransform: simd_float4x4 = matrix_identity_float4x4
-    let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as NSString
-    var videoOutputURL : URL!
-    var videoWriter: AVAssetWriter!
-    var videoWriterInput: AVAssetWriterInput!
-    let defaultLog = Logger()
+    
+    //Dict for the scenes
     var sceneDict = ["Scene1" : 1,
                      "Scene2" : 2,
                      "Scene3" : 3,
@@ -169,7 +167,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         self.makeRoundedCorners(button: self.sideBySidePositionButton)
         self.makeRoundedCorners(button: self.ninetyDegreePositionButton)
         self.makeRoundedCorners(button: self.oppositePositionButton)
-        self.makeRoundedCorners(button: self.changeTaskButton)
         self.makeRoundedCorners(button: self.toggleSharedARHelp)
         self.toggleSharedARHelpLabel.layer.cornerRadius = 5
         self.toggleSharedARHelpLabel.layer.masksToBounds = true
@@ -182,7 +179,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         
         self.shareModelButton.isHidden = true
         
-        //Hide the Setting Buttons for SharedAR until plugin is Selected
+        
+        //Hide all buttons corresponding to the two shared AR plugins until the plugin becomes active.
         self.toggleSharedARHelp.isHidden = true
         self.toggleSharedARHelp.isEnabled = true
         
@@ -248,9 +246,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         self.oppositePositionButton.isHidden = true
         self.oppositePositionButton.isEnabled = true
         
-        self.changeTaskButton.isHidden = true
-        self.changeTaskButton.isEnabled = true
-        
         self.sharedARInfoLabel.isHidden = true
         
         self.startTrialButton.isHidden = true
@@ -314,7 +309,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         
         // Notifcations for shared AR functions
         NotificationCenter.default.addObserver(self, selector: #selector(handleSharedStateChange(_:)), name: Notification.Name.shareSCNNodeData, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(handleSharedStateChange(_:)), name: Notification.Name.shareARPNodeData, object: nil)
+        //NotificationCenter.default.addObserver(self, selector: #selector(handleSharedStateChange(_:)), name: Notification.Name.shareARPNodeData, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleSharedStateChange(_:)), name: Notification.Name.labelCommand, object:  nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleSharedStateChange(_:)), name: Notification.Name.nodeCommand, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleSharedStateChange(_:)), name: Notification.Name.changeModeCommand, object : nil)
@@ -514,6 +509,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
             self.undoButton.isHidden = true
             self.redoButton.isHidden = true
             
+            // if new plugin is sharedARPlugin show all buttons needed
             if newActivePlugin is SharedARPlugin{
                 self.raySettingButton.isHidden = false
                 self.opacitySettingButton.isHidden = false
@@ -536,8 +532,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 self.sideBySidePositionButton.isHidden = false
                 self.ninetyDegreePositionButton.isHidden = false
                 self.oppositePositionButton.isHidden = false
-                //self.changeTaskButton.isHidden = false
-               // self.toggleSharedARHelp.isHidden = false
                 self.settingsButton.isHidden = true
                 self.pluginInstructionsLookupButton.isHidden = true
                 self.menuToggleButton.isHidden = true
@@ -545,6 +539,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 self.startTrialButton.isHidden = false
 
             }
+            //if new plugin is spectatorsharedarplugin show all buttons needed
             if newActivePlugin is SpectatorSharedARPlugin{
                 self.toggleSharedARHelpLabel.isHidden = true
                 self.toggleSharedARHelp.isHidden = true
@@ -555,6 +550,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 self.menuView.isHidden = true
             }
         } else {
+            //show all buttons that were hidden again, and hide all sharedAR buttons
             self.undoButton.isHidden = false
             self.redoButton.isHidden = false
             self.toggleSharedARHelp.isHidden = true
@@ -583,7 +579,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
             self.sideBySidePositionButton.isHidden = true
             self.ninetyDegreePositionButton.isHidden = true
             self.oppositePositionButton.isHidden = true
-            self.changeTaskButton.isHidden = true
             self.toggleSharedARHelpLabel.isHidden = true
             self.startTrialButton.isHidden = true
         }
@@ -1075,19 +1070,29 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
     
     // MARK: - Delegate and functions for Shared Session
     
+    //send session id to other devices
     func sendARSessionIDTo(peers: [MCPeerID]){
         guard let multipeerSession = multipeerSession else {
             return
         }
         let idString = arSceneView.session.identifier.uuidString
-        let command = "SessionID:" + idString
-        if let commandData = command.data(using: .utf8){
-            multipeerSession.sendToPeers(commandData, reliably: true, peers: peers)}
+        if let idStringData = idString.data(using: .utf8){
+            multipeerSession.sendToPeers(idStringData, reliably: true, peers: peers)}
     }
     
+    // received data handling
     func receivedData(_ data: Data, from peer: MCPeerID){
+        if let receivedData = String(data: data, encoding: .utf8){
+            let newSessionID = receivedData
+            if let oldSessionID = peerSesssionIDs[peer]{
+                //Could do something in the future, i.e. remove anchors/objects created by that peer, store stuff did by this peer etc.
+            }
+            peerSesssionIDs[peer] = newSessionID
+        }
         if let receivedNode = try? NSKeyedUnarchiver.unarchivedObject(ofClass: SCNNode.self, from: data){
             switch receivedNode.name {
+            //Commented out all of the general sharing tested in eearly stages
+            /*
             case "cylinderLine":
                 (arSceneView.scene as! PenScene).drawingNode.addChildNode(receivedNode)
                 break
@@ -1135,7 +1140,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 else{
                     (arSceneView.scene as! PenScene).drawingNode.addChildNode(receivedNode)
                     break
-                }
+                }*/
             case "renderedRay":
                 if self.rayToggledOn{
                     if(pluginManager.penScene.drawingNode.childNodes.contains(where: {$0.name == "renderedRay"})){
@@ -1156,6 +1161,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 messageLabel.displayMessage("Unknown Node-Type received!")
             }
         }
+        //commented out arpnodedata recevied data, as it was only used in early testing, could be used in the future again.
+        /*
         else if let receivedARPNodeData = try? JSONDecoder().decode(ARPNodeData.self, from: data){
             switch receivedARPNodeData.pluginName {
             case "Sphere":
@@ -1207,7 +1214,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 messageLabel.displayMessage("Received ARPNodeData of an unknown Plugin!")
                 fatalError("Received ARPNodeData of an unknown Plugin!")
             }
-        }
+        }*/
+        //Handling of videoFrameData
         else if let videoFrameData = try? JSONDecoder().decode(VideoFrameData.self, from: data){
             let sampleBuffer = (videoFrameData.makeSampleBuffer())
             videoProcessor.decompress(sampleBuffer){[self] imageBuffer,presentationTimeStamp in
@@ -1218,6 +1226,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 videoRenderer.enqueueFrame(pixelBuffer: imageBuffer, presentationTimeStamp: presentationTimeStamp, inverseProjectionMatrix: videoFrameData.inverseProjectionMatrix, inverseViewMatrix: videoFrameData.inverseViewMatrix)
             }
         }
+        //Sequence data, used later to compare user input in relocation task to this received sequence, created by the presenter.
         else if let sequenceData = try? JSONDecoder().decode([String].self, from: data){
             if self.pluginManager.activePlugin is SpectatorSharedARPlugin{
                 let currentPlugin = self.pluginManager.activePlugin as! SpectatorSharedARPlugin
@@ -1225,6 +1234,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 messageLabel.displayMessage("", duration: 1)
             }
         }
+        //String command handling, e.g. change task, confirm etc. depending on which of the 2 sharedAR plugins is active.
         else if let stringCommandData = try? JSONDecoder().decode(String.self, from: data){
             if self.pluginManager.activePlugin is SharedARPlugin{
                 let currentPlugin = self.pluginManager.activePlugin as! SharedARPlugin
@@ -1252,8 +1262,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                         self.oppositePositionButton.isHidden = false
                         self.ninetyDegreePositionButton.isHidden = false
                         self.sideBySidePositionButton.isHidden = false
-                        //self.changeTaskButton.isHidden = false
-                       // self.toggleSharedARHelp.isHidden = false
                         self.raySettingButton.isHidden = false
                         self.opacitySettingButton.isHidden = false
                         self.baseSettingButton.isHidden = false
@@ -1428,6 +1436,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         peerSesssionIDs.removeValue(forKey: peer)
     }
     
+    //Handling all the different state changes for the SharedAR part, e.g. nodedata, commands, scene changes etc. etc.
     @objc func handleSharedStateChange(_ notification: Notification){
         guard let userInfo = notification.userInfo else{
             print("notification.userINfo is empty")
@@ -1443,6 +1452,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                 }
                 multipeerSession?.sendToAllPeers(encodedSCNNodeData, reliably: true)
             }
+        //commented out for now, since only used in early testing stages
+        /*
         case .shareARPNodeData:
             let arpNodeData = userInfo["arpNodeData"] as! ARPNodeData
             if !(multipeerSession?.connectedPeers.isEmpty)!{
@@ -1451,7 +1462,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                     fatalError("Failed to encode ARNodeData!")
                 }
                 multipeerSession?.sendToAllPeers(encodedARPNodeData, reliably: true)
-            }
+            }*/
         case .labelCommand:
             let receivedLabelString = userInfo["labelStringData"] as! String
             messageLabel.displayMessage(receivedLabelString,duration: 2)
@@ -1609,33 +1620,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
                     }
                 }
             }
-            else {
-                currentPlugin.buttonPressesOutsideOfTrial += 1
-                switch currentPlugin.currentMode{
-                case "Base":
-                    return
-                case "Ray":
-                    self.rayToggledOn.toggle()
-                    currentPlugin.helpToggled.toggle()
-                case "Opacity":
-                    currentPlugin.helpToggled.toggle()
-                case "Video":
-                    currentPlugin.helpToggled.toggle()
-                    self.pipView.isHidden.toggle()
-                default:
-                    self.messageLabel.displayMessage("Unknown mode set.")
-                }
-                print(currentPlugin.helpToggled)
-                DispatchQueue.main.async {
-                    if currentPlugin.helpToggled{
-                        self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemGreen
-                    }
-                    else{
-                        self.toggleSharedARHelpLabel.backgroundColor = UIColor.systemRed
-                    }
-                }
-            }
-        }/*
+        }
+        
+        //In early stages this button was instead used to save the scenes created, by writing them into csv files, we leave this part commented out here, but if
+        // this ever gets merged or worked on in the future this should be removed and if future saving is needed be put into an own button.
+        /*
         let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
         let log = CSVLogFile(name: "Scene12", inDirectory: URL(fileURLWithPath:documentsPath), options: .lineNumbering)
         log.header = "PosX,PosY,PosZ"
@@ -1656,32 +1645,28 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
     }
 
     
-    // Invoked once when a new anchor is added to the scene
+    // Invoked once when a new anchor is added to the scene, used to initially reset the world origin to the position of the image anchor.
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
         if anchor is ARImageAnchor{
             let coordinateSystem = SCNGeometry.generateCoordinateSystemAxes(color: 1)
             node.addChildNode(coordinateSystem)
-            //let rotationAroundX = SCNMatrix4(m11: 1, m12: 0, m13: 0, m14: 0, m21: 0, m22: 0, m23: -1, m24: 0, m31: 0, m32: 1, m33: 0, m34: 0, m41: 0, m42: 0, m43: 0, m44: 1)
-          //  let worldTransformMatrix = anchor.transform * simd_float4x4.init(rotationAroundX)
             arSceneView.session.setWorldOrigin(relativeTransform: anchor.transform)
-            //(arSceneView.scene as! PenScene).drawingNode.addChildNode(SCNGeometry.generateCoordinateSystemAxes(color: 2))
         }
     }
     
-    // Invoked when an anchor changes , i.e. tracking status
+    // Invoked when an anchor changes , e.g., tracking status, used to reset world origin everytime we go from untracked to tracked
     func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
         guard let imgAnchor = anchor as? ARImageAnchor else { return }
         if imgAnchor.isTracked && !lastTrackingState{
             arSceneView.session.setWorldOrigin(relativeTransform: imgAnchor.transform)
-            latestKnownWorldTransform = imgAnchor.transform
             lastTrackingState = true
         }
         else if !imgAnchor.isTracked && lastTrackingState{
-           // arSceneView.session.setWorldOrigin(relativeTransform: latestKnownWorldTransform)
             lastTrackingState = false
         }
     }
     
+    // MARK: Function linked to all different buttons in the SharedARPlugin, used to change scenes, modes etc. during runtime for all connected devices.
     
     @IBAction func enableBaseSetting(_ sender: UIButton) {
         if pluginManager.activePlugin is SharedARPlugin {
@@ -1974,7 +1959,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
             self.oppositePositionButton.isHidden = true
             self.ninetyDegreePositionButton.isHidden = true
             self.sideBySidePositionButton.isHidden = true
-            self.changeTaskButton.isHidden = true
             self.toggleSharedARHelp.isHidden = true
             self.raySettingButton.isHidden = true
             self.opacitySettingButton.isHidden = true

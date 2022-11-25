@@ -139,7 +139,7 @@ extension ARCamera.TrackingState {
 }
 
 // MARK: - Utilities used in SharedAR
-
+// Creates a 3D Coordinate System, displayed on the ARImageAnchor when tracked, to give an indication that the WorldOrigin has been reset
 extension SCNGeometry{
     
     static func generateCoordinateSystemAxes(length: Float = 0.1, thickness: Float = 2.0, color: Int) -> SCNNode {
@@ -179,7 +179,7 @@ extension SCNGeometry{
     }
 }
 
-
+/* Was used for sharing SCNVector3 in earlier versions. Leaving it here for potential future use.
 extension SCNVector3: Codable {
     private enum CodingKeys: String, CodingKey{
         case x,y,z
@@ -199,8 +199,9 @@ extension SCNVector3: Codable {
         try container.encode(y, forKey: .y)
         try container.encode(z, forKey: .z)
     }
-}
+}*/
 
+/*
 extension String{
     func fileName() -> String{
         return URL(fileURLWithPath: self).deletingPathExtension().lastPathComponent
@@ -209,8 +210,9 @@ extension String{
     func fileExtension() -> String{
         return URL(fileURLWithPath: self).pathExtension
     }
-}
+}*/
 
+// Structure of the JSON, loading the sequenceData results in the the structs seen here.
 struct ResponseData : Decodable{
     var id: [ID]
 }
@@ -231,6 +233,7 @@ struct ColoredNode : Decodable{
     var index : Int
 }
 
+//Used to chunk arrays into specific sizes, was used for the creation of the scenes and to later on countercheck in SharedARPlugin
 extension Array{
     func chunked(into size: Int) -> [[Element]]{
         return stride(from: 0, to: count, by: size).map{

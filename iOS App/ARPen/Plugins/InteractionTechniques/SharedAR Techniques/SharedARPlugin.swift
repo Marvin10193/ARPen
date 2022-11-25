@@ -17,41 +17,43 @@ import CoreMotion
 
 class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     
-    private var csvData : DataFrame?
+    private var csvData : DataFrame? //Used for the positions of the cubes
     private var sceneConstructionResults: (superNode: SCNNode, studyNodes: [ARPenStudyNode])? = nil
 
-    var currentMode : String?
-    var relocationTask: Bool?
+    var currentMode : String? //The current mode
+    var relocationTask: Bool? //Are we in relocation task or not?
     
-    var timer = Timer()
-    var currentlyMeasuringANode = false
-    var trialInProgress = false
+    var timer = Timer() //Timer
+    var currentlyMeasuringANode = false //Are we measuring a node inside a trial?
+    var trialInProgress = false //Is a trial in progresss?
     
     var logger : CSVLogFile?
     
-    let userID = "20"
+    let userID = "23" //Current user ID 0-23
     
-    var userPosition = "Opposite"
+    var userPosition = "Opposite" //Current user Position (Opposite,NinetyDegree,SideBySide)
     
-    let documentsDirectory = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+    let documentsDirectory = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false) //URL to documentDirectory
     
-    var objectNumber = 0
-    var sequenceNumber = 0
+    var objectNumber = 0 //which number in the sequence 0,1,2
+    var sequenceNumber = 0 // which sequence 0,1,2,3,4,5
 
-    var sceneNumber = 0
+    var sceneNumber = 0 // which scene 0 = Demo, 1-12 Normal scenes for the trials
     
-    var layersAsTextures : [CALayer] = []
+    var layersAsTextures : [CALayer] = [] //Layers for the cubes to display numbers
     
-    var currentMeasurement : DataPoint? = nil
+    var currentMeasurement : DataPoint? = nil //Measurement
     
-    var jsonSequenceDataForColoring : [ID] = []
+    var jsonSequenceDataForColoring : [ID] = [] //JsonData for the coloring of cubes to help the presenter
     
     var tapGesture : UITapGestureRecognizer?
     
+    var videoColor : Bool = false
     
     
     
     
+    //Init
     override init(){
         self.relocationTask = false
         self.currentMode = "Base"
@@ -71,7 +73,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         
     }
     
-    
+    //ActivatePlugin, starting with base mode and the demo scene. TapGesture to color cubes.
     override func activatePlugin(withScene scene: PenScene, andView view: ARSCNView, urManager: UndoRedoManager) {
         super.activatePlugin(withScene: scene, andView: view, urManager: urManager)
         
@@ -82,7 +84,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         self.relocationTask = false
         self.currentMode = "Base"
         self.setupScene(sceneNumber: 0)
-        //self.checkDuplicate()
+        
         
         self.tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.colorCurrentSequence))
         self.currentView?.addGestureRecognizer(self.tapGesture!)
@@ -92,6 +94,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         
     }
     
+    //Remove GestureRecognizer and deactive plugin
     override func deactivatePlugin() {
         timer.invalidate()
         if let tapGestureRecognizer = self.tapGesture{
@@ -102,6 +105,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     
     }
     
+    //The layers for the cubes = the numbers from 0-47 on all sides of the cubes.
     func initLayersTextures(){
         for i in 0...47{
             let layer = CALayer()
@@ -120,7 +124,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     }
     
 
-    
+    //Setup function for the scene, CSV-part loaded accordingly and used to build the scene based on that information.
     func setupScene(sceneNumber: Int){
         self.resetScene()
  
@@ -150,7 +154,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
 
     }
     
-    
+    //Actual rebuild of the scene based on the csvdata happens here.
     func preparedARPenNodes<T:ARPenStudyNode>(withScene scene : PenScene, andView view: ARSCNView, andStudyNodeType studyNodeClass: T.Type) -> (superNode: SCNNode, studyNodes: [ARPenStudyNode]) {
         
         var studyNodes : [ARPenStudyNode] = []
@@ -158,7 +162,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         
         for row in csvData!.rows{
             var arPenStudyNode : ARPenStudyNode
-            arPenStudyNode = studyNodeClass.init(withPosition: SCNVector3(row[1] as! Double, row[2] as! Double , row[3] as! Double), andDimension: Float(0.03))
+            arPenStudyNode = studyNodeClass.init(withPosition: SCNVector3(row[1] as! Double, row[2] as! Double , row[3] as! Double + 0.135), andDimension: Float(0.03))
             arPenStudyNode.inTrialState = true
             arPenStudyNode.name = String(row.index)
             arPenStudyNode.geometry?.firstMaterial?.diffuse.contents = layersAsTextures[row.index]
@@ -170,8 +174,15 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         
     }
     
+    // starts a new trial, if the mode is video we change the color back to default if we forgot to toggle the coloring off. This gets called by pressing the start trial button.
     func startTrial(){
         self.currentMeasurement = DataPoint()
+        if (self.currentMode == "Video"){
+            self.sceneConstructionResults?.studyNodes.forEach({
+                $0.geometry?.firstMaterial?.emission.contents = UIColor.magenta
+                $0.geometry?.firstMaterial?.emission.intensity = 0
+            })
+        }
         self.logger = CSVLogFile(name: "SharedAR_ID" + userID + "_RelocationPresenter", inDirectory: self.documentsDirectory, options: .init())
         self.logger?.header = "Trial,Mode,UserPosition,Scene,HightlightedNodes,SummedTrialTime,OverallTime,TimeForNode1,TimeForNode2,TimeForNode3,SummedTimeNode1+2"
         self.timer = Timer.scheduledTimer(timeInterval: (1.0/30.0), target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
@@ -186,6 +197,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         
     }
 
+    //Using pen click to start and stop measurement of a node during a trial. This information gets send to the other device, to also start/stop there.
     func onPenClickEnded(at position: SCNVector3, releasedButton: Button) {
         if !self.relocationTask! && !self.currentlyMeasuringANode && self.highlightedNode != nil && self.trialInProgress {
             self.currentMeasurement?.timeForCurrentNode = 0.0
@@ -219,7 +231,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
             let logMeasurementInformationPackage : [String : Any] = ["measurementCommandData" : "Log"]
             NotificationCenter.default.post(name: .measurementCommand, object: nil, userInfo: logMeasurementInformationPackage)
             
-            
+            //Log on the device running this plugin.
             self.objectNumber += 1
             if objectNumber == 3 {
                 self.timer.invalidate()
@@ -232,6 +244,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
                     $0.geometry?.firstMaterial?.emission.intensity = 0
                 })
                 
+                //Inform via label that a recognition trial has been completed and automatically switch to the relocation task on the other device and here aswell.
                 if self.sequenceNumber < 6{
                     let informationPackageDoneMeassuring: [String : Any] = ["labelStringData": "Data Point done, switch task!"]
                     NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackageDoneMeassuring)
@@ -241,6 +254,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
                     
                     self.relocationTask?.toggle()
                 }
+                //Inform via label that the final recognition trial in a Mode x Position is done and that after the next relocation is done we should swtich to the next setup
                 else if self.sequenceNumber == 6{
                     let informationPackageDoneMeassuring: [String : Any] = ["labelStringData": "One last relocation, then next setting!"]
                     NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackageDoneMeassuring)
@@ -252,15 +266,18 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         }
     }
     
+    
     func onPenClickStarted(at position: SCNVector3, startedButton: Button) {
     }
     
+    //Update the timers, 30Hz
     @objc func updateTimer(){
         self.currentMeasurement!.fullTaskTime += (1.0/30.0)
         self.currentMeasurement!.timeForCurrentNode += (1.0/30.0)
         
     }
     
+    //The highlighted node
     var highlightedNode : ARPenStudyNode? = nil{
         didSet{
             oldValue?.highlighted = false
@@ -270,8 +287,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
     
     
     // Similar ResetScene as in the Viewcontroller, just so I dont have to use the
-    // Notification Center or somehow get the correct ViewController to reset the
-    // scene, once I change the scene to load on the Sender Device
+    // Notification Center or somehow get the correct ViewController to reset the scene
     // also invalidating all timers and resetting their values etc.
     func resetScene(){
         guard let penScene = self.pluginManager?.penScene else {return}
@@ -287,8 +303,10 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         self.pluginManager?.undoRedoManager.resetUndoRedoManager()
     }
     
+    //This constantly fires, while we just move the pen around.
     func onIdleMovement(to position: SCNVector3) {
         DispatchQueue.main.async {
+            //If not in relcation task and a pluginmanager correctly exists, start a hit test based on the position of the pen and if it hits a node, highlight it.
             if self.pluginManager != nil && !self.relocationTask!{
                 let pluginManager = self.pluginManager!
                 let projectedPencilPoint = pluginManager.sceneView.projectPoint(pluginManager.penScene.pencilPoint.position)
@@ -298,9 +316,11 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
                     self.highlightedNode = hitResults.filter({$0.node is ARPenStudyNode}).first?.node as? ARPenStudyNode
                     
                     switch self.currentMode{
+                    //If mode is base simply send the name of the highlighted node.
                     case "Base":
                         let informationPackage : [String : Any] = ["nodeHighlightData" : self.highlightedNode?.name!]
                         NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
+                    //If mode is ray, create a SCNNode from the camera to the hitresults position. Send this data and the highlighted node name to other device.
                     case "Ray":
                         let cameraNode = pluginManager.sceneView.pointOfView
                         let renderedRay = SCNNode()
@@ -313,23 +333,15 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
                         
                         let informationPackageHighlight : [String : Any] = ["nodeHighlightData" : self.highlightedNode?.name!]
                         NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackageHighlight)
-                        
+                    //If mode is video, send the name of the highlighted node.
                     case "Video":
                         let informationPackage : [String : Any] = ["nodeHighlightData" : self.highlightedNode?.name!]
                         NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
-                        
+                    //If mode is Opacity, send name of the highlighted node.
                     case "Opacity":
                         let informationPackage : [String : Any] = ["nodeHighlightData" : self.highlightedNode?.name!]
                         NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
-
-                        /*for node in pluginManager.penScene.drawingNode.childNodes{
-                            if node.name != self.highlightedNode!.name{
-                                node.opacity = 0.5
-                            }
-                            else{
-                                node.opacity = 1.0
-                            }
-                        }*/
+                        
                     default:
                         let informationPackage: [String : Any] = ["labelStringData" : "Unknown Mode Set!"]
                         NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
@@ -338,9 +350,11 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
                 else{
                     self.highlightedNode = nil
                     switch self.currentMode{
+                    //If hittest is negative, send update to other device indicating that no node is highlighted.
                     case "Base":
                         let informationPackage : [String : Any] = ["nodeHighlightData" : "Nil"]
                         NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
+                    //If hittest is negative, send update to other deivce indicating that no node is highlighted and the ray no goes from camera to the unprojectedFarPlanePoint.
                     case "Ray":
                         let cameraNode = pluginManager.sceneView.pointOfView
                         let unprojectedPointVector = SCNVector3(projectedCGPoint.x, projectedCGPoint.y, 1)
@@ -354,17 +368,14 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
                         
                         let informationPackageRay : [String : Any] = ["nodeData" : renderedRay]
                         NotificationCenter.default.post(name: .shareSCNNodeData, object: nil, userInfo: informationPackageRay)
+                    //If hittest is negativ, send update to other device indicating that no node is highlighted.
                     case "Video":
                         let informationPackage : [String : Any] = ["nodeHighlightData" : "Nil"]
                         NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
+                    //If hittest is negativ, send update to other device indicating that no node is highlighted.
                     case "Opacity":
                         let informationPackage : [String : Any] = ["nodeHighlightData" : "Nil"]
                         NotificationCenter.default.post(name: .nodeCommand, object: nil, userInfo: informationPackage)
-                        
-                        /*for node in pluginManager.penScene.drawingNode.childNodes{
-                            node.opacity = 0.5
-                        }*/
-                        
                     default:
                         let informationPackage: [String : Any] = ["labelStringData" : "Unknown Mode Set!"]
                         NotificationCenter.default.post(name: .labelCommand, object: nil, userInfo: informationPackage)
@@ -383,6 +394,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         }
     }
     
+    //Triggered by tapping the screen, with this plugin active, reads information from the loaded JSON file to color the current sequence of cubes that needs to be pointed at.
     @objc func colorCurrentSequence(){
         var k = 0
         self.sceneConstructionResults?.studyNodes.forEach({
@@ -410,8 +422,34 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
                 k += 1
             }
         }
+        //For the video we enable toggling on and off, despite we reset it on trial start anyways to be 100% safe.
+        if (!self.trialInProgress && self.currentMode == "Video" && self.sequenceNumber < 6){
+            self.videoColor.toggle()
+            if (self.videoColor){
+                for node in self.jsonSequenceDataForColoring[Int(self.userID)!].scene[self.sceneNumber - 1].sequence[self.sequenceNumber].node{
+                    switch k{
+                    case 0:
+                        self.sceneConstructionResults?.studyNodes.first(where: {$0.name == node.index.description})?.geometry?.firstMaterial?.emission.contents = UIColor.cyan
+                        self.sceneConstructionResults?.studyNodes.first(where: {$0.name == node.index.description})?.geometry?.firstMaterial?.emission.intensity = 0.4
+                    case 1:
+                        self.sceneConstructionResults?.studyNodes.first(where: {$0.name == node.index.description})?.geometry?.firstMaterial?.emission.contents = UIColor.yellow
+                        self.sceneConstructionResults?.studyNodes.first(where: {$0.name == node.index.description})?.geometry?.firstMaterial?.emission.intensity = 0.4
+                    case 2:
+                        self.sceneConstructionResults?.studyNodes.first(where: {$0.name == node.index.description})?.geometry?.firstMaterial?.emission.contents = UIColor.green
+                        self.sceneConstructionResults?.studyNodes.first(where: {$0.name == node.index.description})?.geometry?.firstMaterial?.emission.intensity = 0.4
+                    default:
+                        return
+                    }
+                    k += 1
+                }
+            }
+            else if (!self.videoColor){
+                return
+            }
+        }
     }
     
+    //Loads a specified JSON file, here used to load the sequenceData.json
     func loadJson(filename fileName: String) -> [ID]?{
         if let url = Bundle.main.url(forResource: fileName, withExtension: "json"){
             do{
@@ -427,6 +465,7 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         return nil
     }
     
+    //DataPointStruct
     struct DataPoint{
         var timeForSingleNode : [Float] = []
         var summedTimeForCurrentNodes : [Float] = []
@@ -436,6 +475,8 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         var timeForCurrentNode : Float = 0.0
     }
     
+    //Was used to check for duplicates in the sequences, not used anymore though.
+    /*
     func checkDuplicate(){
         var joinedArray = [Int]()
         for j in 4...23{
@@ -451,5 +492,5 @@ class SharedARPlugin: Plugin,PenDelegate,TouchDelegate{
         }
             print(" ")
         }
-    }
+    }*/
 }
