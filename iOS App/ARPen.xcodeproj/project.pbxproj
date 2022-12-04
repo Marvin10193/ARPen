@@ -97,6 +97,7 @@
 		4AFE55B725EE8D5D00333026 /* ScrollScalingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFE55B125EE8D5D00333026 /* ScrollScalingPlugin.swift */; };
 		581F385F289155E600DF7C05 /* CSVLogger.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 581F385D289155DD00DF7C05 /* CSVLogger.framework */; };
 		581F3860289155E600DF7C05 /* CSVLogger.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 581F385D289155DD00DF7C05 /* CSVLogger.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		58498832293CE57D007B449D /* CleanContainer.xcappdata in Resources */ = {isa = PBXBuildFile; fileRef = 58498831293CE57D007B449D /* CleanContainer.xcappdata */; };
 		584EFF402833B4CD00FE645F /* VideoProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF3F2833B4CD00FE645F /* VideoProcessor.swift */; };
 		584EFF422833B4F100FE645F /* VideoFrameData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF412833B4F100FE645F /* VideoFrameData.swift */; };
 		584EFF442833B50E00FE645F /* BufferView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584EFF432833B50E00FE645F /* BufferView.swift */; };
@@ -286,6 +287,8 @@
 		4AFE55B025EE8D5D00333026 /* PinchScalingTechniquePlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinchScalingTechniquePlugin.swift; sourceTree = "<group>"; };
 		4AFE55B125EE8D5D00333026 /* ScrollScalingPlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScrollScalingPlugin.swift; sourceTree = "<group>"; };
 		581F385D289155DD00DF7C05 /* CSVLogger.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CSVLogger.framework; sourceTree = "<group>"; };
+		58498830293CE48B007B449D /* README SHAREPEN.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "README SHAREPEN.md"; sourceTree = "<group>"; };
+		58498831293CE57D007B449D /* CleanContainer.xcappdata */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = CleanContainer.xcappdata; sourceTree = "<group>"; };
 		584EFF3F2833B4CD00FE645F /* VideoProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoProcessor.swift; sourceTree = "<group>"; };
 		584EFF412833B4F100FE645F /* VideoFrameData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoFrameData.swift; sourceTree = "<group>"; };
 		584EFF432833B50E00FE645F /* BufferView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BufferView.swift; sourceTree = "<group>"; };
@@ -594,6 +597,15 @@
 			path = ARPen/Plugins/ScalingTechniques;
 			sourceTree = SOURCE_ROOT;
 		};
+		5849882F293CE470007B449D /* SharedAR Container */ = {
+			isa = PBXGroup;
+			children = (
+				58498830293CE48B007B449D /* README SHAREPEN.md */,
+				58498831293CE57D007B449D /* CleanContainer.xcappdata */,
+			);
+			path = "SharedAR Container";
+			sourceTree = "<group>";
+		};
 		584EFF3C2833B47A00FE645F /* ARStreaming */ = {
 			isa = PBXGroup;
 			children = (
@@ -722,6 +734,7 @@
 		DC28B433200E4353008B77AB = {
 			isa = PBXGroup;
 			children = (
+				5849882F293CE470007B449D /* SharedAR Container */,
 				DCE5A37E202F504B005F4186 /* README.md */,
 				DC28B43E200E4353008B77AB /* ARPen */,
 				DC28B43D200E4353008B77AB /* Products */,
@@ -912,6 +925,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				58E8625828BB7AF60004FFF5 /* sequenceData.json in Resources */,
+				58498832293CE57D007B449D /* CleanContainer.xcappdata in Resources */,
 				DC28B442200E4353008B77AB /* art.scnassets in Resources */,
 				4A27E28123A0F9E300C4BF75 /* SecondButton.xib in Resources */,
 				DC28B44C200E4353008B77AB /* LaunchScreen.storyboard in Resources */,

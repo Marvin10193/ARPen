@@ -2,19 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This App uses the Photo Library to save the screen recording from the live video feed.</string>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>This App uses Bonjour services to detect nearby devices that want to join a shared ARSession.</string>
-	<key>NSBonjourServices</key>
-	<array>
-		<string>_arpen-shared._tcp</string>
-		<string>_arpen-shared._udp</string>
-	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>ARPen</string>
+	<string>ShARePen</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -35,8 +26,17 @@
 	<string>ARPen uses Bluetooth to connect to the pen and stays connected to receive button presses.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>To receive information about the buttons pressed on the ARPen, this app uses Bluetooth. </string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_arpen-shared._tcp</string>
+		<string>_arpen-shared._udp</string>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>To show models and drawings in Augmented Reality, this app requires access to the camera. </string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>This App uses Bonjour services to detect nearby devices that want to join a shared ARSession.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This App uses the Photo Library to save the screen recording from the live video feed.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

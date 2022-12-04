@@ -1931,14 +1931,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, PluginManagerDelegate
         NotificationCenter.default.post(name: .changePositionCommand, object: nil, userInfo: informationPackage)
     }
     
-    @IBAction func changeTask(_ sender: UIButton) {
-        let currentPlugin = pluginManager.activePlugin as? SharedARPlugin
-        currentPlugin?.relocationTask?.toggle()
-        
-        let informationPackage : [String : Any] = ["taskChangeData" : "ChangeTask"]
-        NotificationCenter.default.post(name: .changeTaskMode, object: nil, userInfo: informationPackage)
-    }
-    
+    // THIS BUTTON ONLY WORKS IF THERE IS ANOTHER DEVICE CONNECTED TO A SHARED SESSION!!!
     @IBAction func startTrial(_ sender: UIButton) {
         let currentPlugin = pluginManager.activePlugin as! SharedARPlugin
         if !(self.multipeerSession?.connectedPeers.isEmpty)!{
